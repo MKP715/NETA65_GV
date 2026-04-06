@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Grapevine / La Viña — NETA 65</title>
   <meta name="description" content="NETA 65 Grapevine and La Viña Committee — Northeast Texas Area of Alcoholics Anonymous">
-  <link rel="icon" type="image/png" href="https://neta65.org/wp-content/uploads/2021/03/cropped-logo-32x32.png" sizes="32x32">
-  <link rel="icon" type="image/png" href="https://neta65.org/wp-content/uploads/2021/03/cropped-logo-192x192.png" sizes="192x192">
-  <link rel="apple-touch-icon" href="https://neta65.org/wp-content/uploads/2021/03/cropped-logo-180x180.png">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/images/logo-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="assets/images/logo-192x192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="assets/images/logo-180x180.png">
   <meta property="og:title" content="Grapevine / La Viña — NETA 65">
   <meta property="og:description" content="Northeast Texas Area 65 Grapevine and La Viña Committee — resources for GVRs, RLVs, districts, and groups.">
-  <meta property="og:image" content="https://neta65.org/wp-content/uploads/2021/03/cropped-logo-192x192.png">
+  <meta property="og:image" content="assets/images/logo-192x192.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -90,7 +91,7 @@
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
       <div class="flex items-center justify-between py-3 gap-4">
         <a class="flex items-center gap-2.5 no-underline shrink-0 group" href="#home" data-nav="home">
-          <img src="https://neta65.org/wp-content/uploads/2021/03/cropped-logo-120x56.png" alt="NETA 65 Logo" class="h-9 rounded transition-transform group-hover:scale-105">
+          <img src="assets/images/cropped-logo-120x56.png" alt="NETA 65 Logo" class="h-9 rounded transition-transform group-hover:scale-105">
           <div>
             <div class="hdr-brand-title text-[.9rem] font-bold text-slate-900 leading-tight transition-colors">Grapevine / La Viña</div>
             <div class="hdr-brand-sub text-[.6rem] text-slate-500 font-medium tracking-wider uppercase transition-colors">NETA 65 Committee</div>
@@ -205,11 +206,11 @@ const BASE_PATH = "";
    Leave "" to use local file paths instead.
    ────────────────────────────────────────────────────────────── */
 const GOOGLE_DRIVE = {
-  reports: "",   // folder link for monthly reports
-  notes:   "",   // folder link for meeting notes
-  slides:  "",   // folder link for slide decks
-  flyers:  "",   // folder link for event flyers
-  photos:  "",   // folder link for booth photos
+  reports: "https://drive.google.com/drive/folders/1RgSgkCjJsEdY8rISWqrI4uwxTvnnlH8f?usp=sharing",
+  notes:   "https://drive.google.com/drive/folders/1IaZYAtSzOCuF6z1sLo77wnFVui93MvgH?usp=sharing",
+  slides:  "https://drive.google.com/drive/folders/1JbMdhAJOMEMuxeYSe8471inw1bXOUaed?usp=sharing",
+  flyers:  "https://drive.google.com/drive/folders/1FsTg6sV2pKTZikfLFHiYZzaTP0QelHAD?usp=sharing",
+  photos:  "https://drive.google.com/drive/folders/1lj7fqbCKlBJM-ivbm7CTZPgIDci23or_?usp=sharing",
 };
 const NAV_SECTIONS = [
   { id:"home",       label:"Home",           icon:"bi-house" },
