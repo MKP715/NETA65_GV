@@ -20,12 +20,16 @@ A bilingual (English/Spanish) single-page website for the Northeast Texas Area 6
    - [Meeting Info / Zoom](#update-meeting-info)
    - [Weekly Open Meeting Info](#update-weekly-open-meeting-info)
    - [Editorial Calendar](#update-editorial-calendar)
-   - [Subscription Prices](#update-subscription-prices)
+   - [Subscription Prices, Tiers, Gift, and Phones](#update-subscription-prices)
    - [YouTube Videos](#add-a-youtube-video)
    - [Podcast Episodes](#add-a-podcast-episode)
    - [Instagram Posts](#add-an-instagram-post)
    - [Timeline Milestones](#add-a-timeline-milestone)
    - [Resource Links](#add-a-resource-link)
+   - [Page Headers (Heroes)](#update-page-headers-heroes)
+   - [Home Page Cards](#update-home-page-cards)
+   - [Contribute Page — Submission Types](#update-what-you-can-submit-cards-contribute-page)
+   - [Contribute Page — Submission Channels](#update-submission-methods-gv--lv)
    - [GVR/RLV Postcards & Flyers](#update-gvr--rlv-postcards--flyers)
 6. [Language / Translation (EN ↔ ES)](#language--translation-en--es)
 7. [File Naming Rules](#file-naming-rules)
@@ -50,11 +54,14 @@ The entire website is a single HTML file. All the content you'll ever need to up
 ### Key Features
 
 - **Bilingual**: Full English/Spanish toggle — all page content, dates, buttons, and labels switch instantly
+- **Responsive**: Works on every screen from 320px phones to 4K desktops
+- **Accessible**: Skip-to-content link, keyboard focus ring, 44×44 touch targets, reduced-motion support, iOS safe-area handling
 - **Auto-generated meetings**: Monthly committee meetings (3rd Wednesday) are calculated automatically
 - **Countdown timer**: Live countdown to the next meeting on the home page
 - **90-day announcements**: Old announcements automatically hide after 90 days
 - **Random media picks**: Home page shows different podcast and YouTube selections each visit
-- **PDF viewer**: Documents open in an inline viewer (no download required)
+- **PDF viewer**: Documents open in an inline viewer; Drive-hosted PDFs use Drive's native `/preview` endpoint, external PDFs use Google Docs Viewer
+- **Google Drive smart links**: Paste any Drive sharing-link format (`/view`, `/preview`, `?id=`, docs.google.com URLs) — the site auto-transforms it to the right endpoint for iframes, images, and downloads
 - **Calendar export**: Events can be added to any calendar app via .ics download
 - **Share buttons**: Announcements and events can be shared via native share or clipboard
 
@@ -72,7 +79,7 @@ The entire website is a single HTML file. All the content you'll ever need to up
 ## Quick Start
 
 1. Open `index.html` in your text editor
-2. Find the section marked `CONFIGURATION — EDIT THESE ARRAYS TO UPDATE THE SITE` (around line 198)
+2. Find the section marked `CONFIGURATION — EDIT THESE ARRAYS TO UPDATE THE SITE` (around line 230)
 3. Make your changes following the instructions below
 4. Save the file
 5. Double-click `index.html` to preview in your browser
@@ -140,16 +147,50 @@ When these are filled in, the Documents and Photos pages will show "View on Goog
 
 ### Step 4 — Link Individual Files
 
-For documents and photos, you can use either:
-- **Local file paths** (the filename in the matching folder): `"report-2026-04.pdf"`
-- **Google Drive direct links** (full URL): `"https://drive.google.com/file/d/FILEID/view?usp=sharing"`
+For every document, photo, and flyer in the site, you can use either:
 
-To get a direct link for a file in Google Drive:
-1. Right-click the file
-2. Click **Share** > **Copy link**
-3. Paste the full URL as the filename
+- **Local file path** (just the filename in the matching folder): `"report-2026-04.pdf"`
+- **Google Drive sharing link** (full URL): `"https://drive.google.com/file/d/FILEID/view?usp=sharing"`
 
-The website automatically detects whether you're using a local file or a web link.
+Both forms drop in to the **same `filename` field** of the matching array — the website detects which one you pasted and routes it to the right place.
+
+#### Getting a Drive sharing link
+
+1. In Google Drive, right-click the file → **Share**
+2. Set **General access** → "Anyone with the link" → **Viewer**
+3. Click **Copy link**
+4. Paste the entire URL as the value of the `filename` field
+
+#### Any Drive link format works
+
+The site contains a small `driveUrl()` helper that recognizes **all** of these sharing-link formats and converts them to the right form for each use case (iframe preview, image, download, etc.). You can paste any of these and it will just work:
+
+| Pattern | Notes |
+|---|---|
+| `https://drive.google.com/file/d/FILE_ID/view?usp=sharing` | Default "Copy link" output — most common |
+| `https://drive.google.com/file/d/FILE_ID/preview` | Preview URL |
+| `https://drive.google.com/open?id=FILE_ID` | Older share format |
+| `https://drive.google.com/uc?export=download&id=FILE_ID` | Direct-download URL |
+| `https://docs.google.com/document/d/FILE_ID/edit` | Google Docs |
+| `https://docs.google.com/spreadsheets/d/FILE_ID/edit` | Google Sheets |
+| `https://docs.google.com/presentation/d/FILE_ID/edit` | Google Slides |
+
+#### What the site does with each link
+
+| Where it appears | What the site does with the link |
+|---|---|
+| Reports / Notes / Slides download buttons | Opens the Drive viewer page in a new tab |
+| Inline PDF viewer modal (clicking a GVR PDF) | Embeds Drive's own `/preview` iframe (full PDF viewing inside the site) |
+| Inline PDF viewer "Open" button | Drive viewer page in new tab |
+| Inline PDF viewer "Download" button | Direct-download endpoint (forces a file download) |
+| Booth photos `<img>` | Drive `thumbnail` endpoint (fast loading, sized to ~2000px wide) |
+| Event flyer link | Drive viewer page in new tab |
+
+> **Important:** All linked files **must** be set to "Anyone with the link → Viewer". Files with restricted permissions will load as broken images or empty PDF viewers.
+
+#### Mixing local and Drive links
+
+You can mix and match — for example, store reports locally but photos on Drive. Each `filename` field is independent.
 
 ---
 
@@ -309,14 +350,86 @@ Find `const EDITORIAL_CALENDAR = [` and replace with current topics from [aagrap
 
 ### Update Subscription Prices
 
-The Subscribe page has prices in the `renderSubscribe()` function. Search for `$36`, `$2.99`, `$69`, etc. and update when Grapevine announces price changes.
+All Subscribe page pricing lives in the `SUBSCRIPTION_TIERS` array. **You do not need to touch any render code.** Each tier is one entry that produces one pricing card:
 
-Current pricing: [aagrapevine.org/store/us-subscriptions](https://www.aagrapevine.org/store/us-subscriptions)
+```js
+{
+  section:"gv",                                  // "gv" or "lv"
+  theme:"brand",                                 // "brand" | "amber" | "brand-highlight" | "amber-highlight"
+  name:"Print Only", name_es:"Solo Impresa",
+  price:"$36",
+  period:"per year (12 issues)", period_es:"por año (12 ediciones)",
+  features:[
+    { ok:true,  text:"12 monthly print issues mailed",   text_es:"12 ediciones impresas mensuales por correo" },
+    { ok:true,  text:"Stories from AA members worldwide", text_es:"Historias de miembros de AA en todo el mundo" },
+    { ok:false, text:"No digital/app access",             text_es:"Sin acceso digital/app" },
+  ],
+  ctaUrl:"https://www.aagrapevine.org/store/us-subscriptions",
+  ctaLabel:"Subscribe", ctaLabel_es:"Suscribirse",
+  badge:null, badge_es:null,                     // optional ribbon e.g. "Best Value" / "Promo"
+},
+```
 
-Phone numbers for subscriptions are also in `renderSubscribe()`:
-- USA: (800) 631-6025
-- International: +1 (570) 567-0437
-- En Espanol: (800) 640-8781
+| Field | What it controls |
+|---|---|
+| `section` | `"gv"` puts the card under the Grapevine section header; `"lv"` under La Viña |
+| `theme` | Color: `brand` = blue, `amber` = orange, `*-highlight` adds a colored ring |
+| `price` | Big number shown (any string — `$36`, `$2.99`, `$69`, etc.) |
+| `features` | List of bullet items. Set `ok:false` to render an X icon (e.g. "No app access") |
+| `badge` | Optional ribbon at top of card (e.g. `"Best Value"`, `"Promo"`). Set to `null` for no ribbon |
+| `ctaUrl` | URL the Subscribe button opens |
+
+Current pricing reference: [aagrapevine.org/store/us-subscriptions](https://www.aagrapevine.org/store/us-subscriptions)
+
+#### Update Section Headers
+
+The "AA Grapevine" and "La Viña" group headers above the tier cards are in `SUBSCRIPTION_SECTIONS`:
+
+```js
+const SUBSCRIPTION_SECTIONS = {
+  gv: { icon:"bi-journal-richtext", iconBg:"bg-brand-50 text-brand-600",
+        name:"AA Grapevine", name_es:"AA Grapevine",
+        tagline:"Monthly magazine — print, digital, or both",
+        tagline_es:"Revista mensual — impresa, digital o ambas" },
+  lv: { ... },
+};
+```
+
+#### Update the Gift Subscription Card
+
+The gift card next to the LV tiers is `SUBSCRIPTION_GIFT`:
+
+```js
+const SUBSCRIPTION_GIFT = {
+  icon:"bi-gift",
+  title:"Gift Subscriptions & Carry the Message", title_es:"Suscripciones de Regalo y Lleva el Mensaje",
+  body:"Give the gift of Grapevine or La Viña...", body_es:"Regala una suscripción...",
+  bullets:[
+    { text:"Anniversary gifts", text_es:"Regalos de aniversario" },
+    ...
+  ],
+  ctaUrl:"https://www.aagrapevine.org/carry-the-message",
+  ctaLabel:"Carry the Message", ctaLabel_es:"Lleva el Mensaje",
+  ctaIcon:"bi-heart",
+};
+```
+
+#### Update Subscription Phone Numbers
+
+The phone numbers shown at the bottom of the Subscribe page live in `SUPPORT_CONTACT`:
+
+```js
+const SUPPORT_CONTACT = {
+  prompt:"Need help with subscriptions?", prompt_es:"¿Necesitas ayuda con suscripciones?",
+  lines:[
+    { label:"USA:",           label_es:"EE.UU.:",        value:"(800) 631-6025" },
+    { label:"International:", label_es:"Internacional:", value:"+1 (570) 567-0437" },
+    { label:"En Español:",    label_es:"En Español:",    value:"(800) 640-8781" },
+  ],
+};
+```
+
+Add or remove `lines` entries freely — the card auto-resizes.
 
 ---
 
@@ -344,13 +457,13 @@ Add new videos to the appropriate section.
 
 ### Add a Podcast Episode
 
-Find `const SPOTIFY_EPISODES = [` and add:
+Find `const PODCAST_EPISODES = [` and add:
 
 ```js
 { id: "EPISODE_ID", title: "Episode Title" },
 ```
 
-Find episode IDs at the [AA Grapevine Spotify page](https://open.spotify.com/show/714djcL57SFf0Nzf40CL8Q) — the ID is in the URL after `/episode/`.
+Find episode IDs at the [AA Grapevine Apple Podcasts page](https://podcasts.apple.com/us/podcast/aa-grapevines-podcast/id1591924167) — open any episode and copy the numeric value after `?i=` in the URL (e.g. `1000756687022`). Apple's embed plays full episodes anonymously, unlike Spotify's 30-second preview.
 
 ---
 
@@ -415,6 +528,115 @@ Icon names from [icons.getbootstrap.com](https://icons.getbootstrap.com) — use
 
 ---
 
+### Update Page Headers (Heroes)
+
+The big gradient banner at the top of every page is driven by the `PAGE_HEROES` object. To rename a page or change its subtitle, edit only this object — no template editing required.
+
+```js
+const PAGE_HEROES = {
+  about: { icon:"bi-info-circle-fill",
+           title:"About Grapevine & La Viña", title_es:"Acerca de Grapevine y La Viña",
+           sub:"AA's Meeting in Print — 80+ years of history, {milestones} milestones",
+           sub_es:"La Reunión Impresa de AA — Más de 80 años de historia, {milestones} hitos" },
+  events: { icon:"bi-calendar-event-fill",
+            title:"Events", title_es:"Eventos",
+            sub:"{up} upcoming · {pa} past", sub_es:"{up} próximos · {pa} pasados" },
+  ...
+};
+```
+
+- `icon` — any [Bootstrap Icon](https://icons.getbootstrap.com) name (`bi-` prefix)
+- `title` / `title_es` — page title (HTML allowed)
+- `sub` / `sub_es` — subtitle. Curly-brace `{placeholders}` are filled in by the render function with values like the upcoming-event count or milestone count
+- The `home` page has a custom layout with countdown + CTAs but still pulls its title/sub from `PAGE_HEROES.home`
+
+---
+
+### Update Home Page Cards
+
+The two grids of dashboard cards on the Home page are arrays — `HOME_QUICK_CARDS` (top row) and `HOME_BROWSE_CARDS` (lower grid). To add, remove, or reorder a card, edit the array.
+
+```js
+const HOME_QUICK_CARDS = [
+  { id:"meeting", icon:"bi-camera-video-fill", bg:"bg-sky-50 text-sky-600",
+    title:"Next Meeting", title_es:"Próxima Reunión",
+    desc:"{date}<br>{time}",         desc_es:"{date}<br>{time}",
+    count:"Zoom: {meetingId}",       count_es:"Zoom: {meetingId}" },
+  ...
+];
+```
+
+| Field | Notes |
+|---|---|
+| `id` | Page id the card navigates to (must match a `NAV_SECTIONS.id`) |
+| `icon` | Bootstrap Icon class (e.g. `bi-camera-video-fill`) |
+| `bg` | Tailwind classes for the icon background and color (e.g. `"bg-sky-50 text-sky-600"`) |
+| `title` / `title_es` | Card title |
+| `desc` / `desc_es` | Card description. May include `{placeholders}` filled at render time |
+| `count` / `count_es` | Optional small badge text below the description |
+
+The placeholders available for each card are listed inside `renderHome()` in the `quickVars` and `browseVars` objects. Currently:
+
+| Card id | Available placeholders |
+|---|---|
+| `meeting` | `{date}`, `{time}`, `{meetingId}` |
+| `events` | `{nextLine}` (next event title + date), `{n}` (count of upcoming) |
+| `documents` | `{r}` (report count), `{n}` (notes count) |
+| `photos` | `{p}` (photo count) |
+| `resources` | `{n}` (link count) |
+
+---
+
+### Update "What You Can Submit" Cards (Contribute Page)
+
+The three cards on the Contribute page describing what to send come from `SUBMISSION_TYPES`:
+
+```js
+const SUBMISSION_TYPES = [
+  { icon:"bi-journal-text",
+    title:"Stories", title_es:"Historias",
+    body:"Most articles are first-person accounts...",
+    body_es:"La mayoría de los artículos son relatos en primera persona...",
+    note:"Emotional Sobriety, Sponsorship, ...",      // optional small subtext
+    note_es:"Sobriedad Emocional, Padrinazgo, ..." },
+  ...
+];
+```
+
+Add or remove cards freely. The grid auto-flows.
+
+---
+
+### Update Submission Methods (GV / LV)
+
+The "How to Submit" and "Contribute to La Viña" boxes on the Contribute page come from `SUBMIT_CHANNELS`. Each entry is one full block with its own heading, intro, numbered methods, footer note, and optional extra CTA.
+
+```js
+const SUBMIT_CHANNELS = {
+  gv: {
+    theme:"brand",                                  // "brand" (blue) or "amber"
+    heading:"How to Submit", heading_es:"Cómo Enviar",
+    headingIcon:"bi-send",
+    items:[
+      { num:1, label:"Online (easiest)", label_es:"En línea (lo más fácil)",
+        text:"aagrapevine.org/share", url:"https://www.aagrapevine.org/share" },
+      { num:2, label:"Email", label_es:"Correo electrónico",
+        text:"editorial@aagrapevine.org", url:"mailto:editorial@aagrapevine.org" },
+      { num:3, label:"Mail", label_es:"Correo postal",
+        text:"Grapevine Editorial, 475 Riverside Drive, New York, NY 10115",
+        url:"" },                                   // empty url = plain text (no link)
+    ],
+    footer:"Include your full name, address, phone, and email...",
+    footer_es:"Incluye tu nombre completo...",
+  },
+  lv: { ... same shape, plus optional `intro` paragraph and `extraCta` ... },
+};
+```
+
+To change the GV mailing address, edit `SUBMIT_CHANNELS.gv.items[2].text`. To change the LV email, edit `SUBMIT_CHANNELS.lv.items[1]`. Each `item` can be a clickable link (`url:"..."`) or plain text (`url:""`).
+
+---
+
 ### Update GVR / RLV Postcards & Flyers
 
 The GVR Corner page has four tabs of downloadable materials:
@@ -437,11 +659,19 @@ The website is fully bilingual. Users click the **ES/EN** button in the header t
 
 ### How Translation Works
 
-- **Dynamic content** uses the `t("English text", "Spanish text")` helper function throughout all render functions
+The site uses **two complementary translation mechanisms**:
+
+1. **Inline strings** — `t("English text", "Spanish text")` is used inside render functions for one-off labels, button text, empty-state messages, etc. It returns the right string based on the current language.
+
+2. **Data-array fields** — Each entry in `ANNOUNCEMENTS`, `SPECIAL_EVENTS`, `RESOURCES`, `TIMELINE`, `PAGE_HEROES`, `HOME_QUICK_CARDS`, `SUBSCRIPTION_TIERS`, `SUBMISSION_TYPES`, `SUBMIT_CHANNELS`, etc. carries both languages with the suffix convention `field` (English) and `field_es` (Spanish). The helper `tx(obj, "field")` automatically picks the right one based on the current language. When you add a new entry to any data array, always include both the plain and `_es` fields.
+
+Additionally:
+
 - **Dates** automatically format in the correct locale (English or Spanish)
-- **Static HTML elements** (header, footer, modals) are updated by the `applyLang()` function
+- **Static HTML elements** (header, footer, modal button labels) are updated by the `applyLang()` function using the `I18N` object
 - **Navigation labels** are translated via the `NAV_ES` object
 - **Language preference** is saved to the browser's localStorage, so it persists between visits
+- **Placeholder templates** in `PAGE_HEROES` subtitles and `HOME_QUICK_CARDS`/`HOME_BROWSE_CARDS` text (like `"{n} upcoming"`) are substituted by the `fmt()` helper at render time
 
 ### What's Translated
 
@@ -466,13 +696,22 @@ Some items intentionally remain in their original language:
 
 ### Adding New Translated Content
 
-When adding new content to render functions, always use the `t()` helper:
+**For a new data-array entry** (the common case — announcements, events, resources, subscription tiers, etc.), include both language fields:
+
+```js
+{ title: "English title", title_es: "Título en español",
+  body:  "English body",  body_es:  "Cuerpo en español" }
+```
+
+Any field the render code pulls via `tx(obj, "field")` will automatically fall back to the English version if `field_es` is empty, so incomplete translations fail gracefully instead of blanking.
+
+**For a new inline string inside a render function**, use the `t()` helper:
 
 ```js
 t("English text here", "Spanish text here")
 ```
 
-For the `I18N` object (used by `applyLang()` for static HTML), add entries like:
+**For a new static element** in the header, footer, or modal (text that doesn't come from a render function), add an entry to the `I18N` object used by `applyLang()`:
 
 ```js
 const I18N = {
@@ -480,6 +719,8 @@ const I18N = {
   ...
 };
 ```
+
+Then update `applyLang()` to apply your new key to its target element.
 
 ---
 
@@ -612,8 +853,8 @@ After each committee meeting, do these steps:
 ## Annual Checklist
 
 - [ ] Update `EDITORIAL_CALENDAR` from [aagrapevine.org/contribute](https://www.aagrapevine.org/contribute) — add the new year's topics
-- [ ] Verify subscription prices and update `renderSubscribe()` if changed (check [aagrapevine.org/store/us-subscriptions](https://www.aagrapevine.org/store/us-subscriptions))
-- [ ] Update phone numbers if they've changed
+- [ ] Verify subscription prices and update `SUBSCRIPTION_TIERS` if changed (check [aagrapevine.org/store/us-subscriptions](https://www.aagrapevine.org/store/us-subscriptions))
+- [ ] Update phone numbers in `SUPPORT_CONTACT` if they've changed
 - [ ] Add new YouTube videos and podcast episodes
 - [ ] Review `RESOURCES` links for broken URLs — click each one to verify
 - [ ] Add new timeline milestones to `TIMELINE` if applicable
@@ -621,7 +862,7 @@ After each committee meeting, do these steps:
 - [ ] Check if aagrapevine.org has new postcards/flyers and update the GVR Corner tabs
 - [ ] Review the `ANNOUNCEMENTS` array and clean out anything outdated
 - [ ] Update the GV Workbook link if a newer version is published (check [aagrapevine.org/gvr-resources](https://www.aagrapevine.org/gvr-resources))
-- [ ] Check for new GV/LV catalog PDFs and update links in both `RESOURCES` and `renderSubscribe()`
+- [ ] Check for new GV/LV catalog PDFs and update their entries in `RESOURCES` — the Subscribe page reads the catalog buttons from `RESOURCES` automatically
 
 ---
 
@@ -665,7 +906,10 @@ When the Grapevine/La Vina Committee Chair rotates:
 | Changes not showing on live site | Clear your browser cache (Ctrl+Shift+R) or wait a few minutes for GitHub Pages to update. |
 | Spanish translation missing | Make sure the text uses `t("English","Spanish")` wrapper. See [Language section](#language--translation-en--es). |
 | Countdown shows "coming soon" | The meeting date may have passed. The countdown auto-advances to the next 3rd Wednesday. |
-| PDF viewer shows blank | Some Google Drive PDFs require the file to be publicly shared. Check sharing permissions. |
+| PDF viewer shows blank | The file is not publicly shared. Open it in Drive → Share → set to "Anyone with the link → Viewer". |
+| Drive PDF won't preview inside the modal | Make sure the URL is the actual Drive sharing link (contains `/file/d/...` or `?id=...`). The site auto-detects all standard sharing-link formats. |
+| Drive image shows as broken icon | Image must be publicly shared AND must be a real image file (jpg/png), not a Google Doc. The site fetches images via Drive's `thumbnail` endpoint. |
+| "Forbidden" or 403 on a Drive file | Sharing was changed or the file was moved. Re-copy the share link and re-paste it into the array. |
 | Events not showing | Check that the `date` field is in `YYYY-MM-DD` format. Future events show under "Upcoming." |
 | YouTube video thumbnail broken | Verify the video ID is correct. Private or deleted videos won't show thumbnails. |
 | Instagram embeds not loading | Instagram embeds may be blocked by ad blockers. This is normal. |
@@ -686,35 +930,95 @@ When the Grapevine/La Vina Committee Chair rotates:
 
 ## Technical Details
 
-- **Single HTML file** — all CSS, JS, and content in one file (~235KB)
+- **Single HTML file** — all CSS, JS, and content in one file (~270KB)
 - **No build tools** — no npm, no bundler, no server needed
-- **CDN dependencies:** Tailwind CSS, Bootstrap Icons, Google Fonts (Inter)
+- **CDN dependencies:** Tailwind CSS (Play CDN), Bootstrap Icons, Google Fonts (Inter)
 - **SPA routing** via `hashchange` — browser back/forward works, bookmarkable URLs
-- **Responsive** from mobile (320px) to ultra-wide (2560px+)
-- **Accessibility:** skip-to-content link, keyboard navigation, ARIA labels, focus management
 - **Bilingual:** Full EN/ES toggle with localStorage persistence
-- **Offline-capable structure:** Content renders from local data arrays, only external dependencies are CDN CSS/fonts and embedded media (YouTube, Spotify, Instagram)
+- **Google Drive aware:** `driveFileId()` / `driveUrl()` auto-transform any Drive sharing-link format into the right endpoint for iframes, images, and downloads
+- **Offline-capable structure:** Content renders from local data arrays; the only external dependencies are the CDN CSS/fonts and embedded media (Apple Podcasts, YouTube, Instagram)
+
+### Responsive design
+
+Tested and working from **320px** (iPhone SE portrait) up to **2560px+** (ultra-wide desktop). Key details:
+
+- Single set of Tailwind breakpoints (`sm` 640, `md` 768, `lg` 1024, `xl` 1280) — every grid uses `grid-cols-1 sm:grid-cols-2 …` patterns to collapse gracefully
+- Mobile-first sidebar navigation (slides in from the right with `max-w-[85vw]`)
+- Page content is capped at `max-w-[1600px]` so it stays readable on 4K/5K monitors
+- Header is transparent over page heroes, solid on scroll, and stacks tightly on narrow viewports (brand subtitle hides below 400px wide)
+- Home page hero uses a 2-col grid above `md` (title + countdown) and stacks on mobile
+- Timeline collapses from its desktop alternating left/right layout to a single left-aligned rail on `< md` via dedicated mobile CSS
+- Modals (`max-h-[90vh]`) scroll internally on small screens instead of clipping
+- `body { overflow-x: hidden }` and `p, li, td { overflow-wrap: break-word }` guarantee no accidental horizontal scroll from long URLs or wide content
+- `html { scroll-padding-top: 80px }` so `#anchor` jumps clear the fixed header
+
+### Accessibility
+
+Built to meet WCAG 2.1 Level AA where reasonable:
+
+- **Skip-to-content link** — first element in the tab order
+- **ARIA labels** on every icon-only button (menu, lang toggle, close, prev/next, etc.)
+- **Semantic HTML** — `<header>`, `<nav>`, `<footer>`, `<button type="button">`, proper heading hierarchy
+- **`:focus-visible` ring** — 2px brand-blue outline shown only for keyboard focus (not mouse clicks); follows each element's own border-radius
+- **44×44 touch targets** — gallery dots/arrows, sidebar nav items, modal close buttons all meet the WCAG minimum
+- **Reduced-motion support** — all animations and transitions collapse to 0.01ms when the user sets `prefers-reduced-motion: reduce`
+- **iOS safe-area-inset** — the floating "back-to-top" button, sidebar, and footer respect the home-indicator safe area on notched iOS devices
+- **iOS Safari auto-zoom protection** — `text-size-adjust:100%` stops Safari from enlarging text on rotate
+- **`loading="lazy"`** on photos and YouTube thumbnails
+- **Keyboard shortcut**: `Esc` closes the sidebar, event modal, and PDF modal
 
 ### Configuration Arrays Reference
 
 | Array/Object | Location | Purpose |
 |-------------|----------|---------|
-| `BASE_PATH` | Line ~200 | URL prefix for local file paths |
-| `GOOGLE_DRIVE` | Line ~207 | Google Drive folder sharing links |
-| `NAV_SECTIONS` | Line ~214 | Navigation menu items and icons |
-| `ANNOUNCEMENTS` | Line ~227 | Time-sensitive announcements (auto-expire 90 days) |
-| `MEETING_INFO` | Line ~233 | Committee meeting Zoom details |
-| `WEEKLY_OPEN` | Line ~241 | GV Weekly Open Meeting Zoom details |
-| `SPECIAL_EVENTS` | Line ~258 | Non-recurring events (assemblies, workshops, etc.) |
-| `REPORTS` | Line ~266 | Monthly committee report PDFs |
-| `MEETING_NOTES` | Line ~276 | Monthly meeting notes with summaries |
-| `MEETING_SLIDES` | Line ~282 | Monthly meeting slide decks |
-| `BOOTH_PHOTOS` | Line ~288 | Event and booth photo gallery |
-| `RESOURCES` | Line ~296 | Categorized external links |
-| `EDITORIAL_CALENDAR` | Line ~335 | GV submission topics and deadlines |
-| `TIMELINE` | Line ~363 | Historical milestones for About page |
-| `YOUTUBE_VIDEOS` | Line ~406 | YouTube video IDs and titles |
-| `SPOTIFY_EPISODES` | Line ~539 | Spotify episode IDs and titles |
-| `INSTAGRAM_POSTS` | Line ~558 | Instagram post shortcodes |
-| `I18N` | Line ~1342 | Static HTML translation strings |
-| `NAV_ES` | Line ~598 | Spanish navigation labels |
+| `BASE_PATH` | Line ~233 | URL prefix for local file paths |
+| `GOOGLE_DRIVE` | Line ~240 | Google Drive folder links (shown as "View on Drive" buttons) |
+| `NAV_SECTIONS` | Line ~247 | Navigation menu items and icons |
+| `ANNOUNCEMENTS` | Line ~260 | Time-sensitive announcements (auto-expire 90 days) |
+| `MEETING_INFO` | Line ~266 | Committee meeting Zoom details + chair contact |
+| `WEEKLY_OPEN` | Line ~276 | GV Weekly Open Meeting Zoom details |
+| `SPECIAL_EVENTS` | Line ~293 | Non-recurring events (assemblies, workshops, etc.) |
+| `REPORTS` | Line ~301 | Monthly committee report PDFs |
+| `MEETING_NOTES` | Line ~311 | Monthly meeting notes with summaries |
+| `MEETING_SLIDES` | Line ~317 | Monthly meeting slide decks |
+| `BOOTH_PHOTOS` | Line ~323 | Event and booth photo gallery |
+| `RESOURCES` | Line ~331 | Categorized external links shown on Resources page |
+| `EDITORIAL_CALENDAR` | Line ~370 | GV submission topics and deadlines |
+| `TIMELINE` | Line ~398 | Historical milestones for About page |
+| `APPLE_SHOW_ID` / `APPLE_SHOW_SLUG` | Line ~440 | Apple Podcasts show identifier (for embeds) |
+| `YOUTUBE_VIDEOS` | Line ~442 | YouTube video IDs and titles |
+| `PODCAST_EPISODES` | Line ~577 | Apple Podcasts episode IDs and titles |
+| `INSTAGRAM_POSTS` | Line ~596 | Instagram post shortcodes |
+| `PAGE_HEROES` | Line ~612 | Hero banner title + subtitle for every page (en/es) |
+| `HOME_QUICK_CARDS` | Line ~632 | Home page action cards (top row) |
+| `HOME_BROWSE_CARDS` | Line ~638 | Home page navigation cards (lower grid) |
+| `SUBSCRIPTION_TIERS` | Line ~654 | Subscribe page pricing cards (GV + LV) |
+| `SUBSCRIPTION_SECTIONS` | Line ~718 | Subscribe page section headers (GV / LV groupings) |
+| `SUBSCRIPTION_GIFT` | Line ~723 | Subscribe page gift / Carry the Message card |
+| `SUPPORT_CONTACT` | Line ~743 | Subscribe page phone numbers |
+| `SUBMISSION_TYPES` | Line ~755 | Contribute page "What You Can Submit" cards |
+| `SUBMIT_CHANNELS` | Line ~781 | Contribute page submission methods (GV + LV) |
+| `NAV_ES` | Line ~893 | Spanish navigation labels |
+| `I18N` | Line ~1637 | Static HTML translation strings (header, footer, modals) |
+
+### Helper functions reference
+
+| Function | Purpose |
+|---|---|
+| `t("English","Español")` | Picks the right inline string based on the current language |
+| `tx(obj,"field")` | Picks `obj.field_es` when in Spanish mode, else `obj.field`. Used by all data-array render code |
+| `fmt(str, vars)` | Replaces `{key}` placeholders in a string with `vars[key]`. Used for hero subtitles and home cards |
+| `heroHtml(key, vars)` | Builds the standard gradient page hero from a `PAGE_HEROES` entry |
+| `fp(folder, name)` | Returns full URL if `name` is already an `http(s)://` URL, else builds a local path |
+| `driveFileId(url)` | Extracts the Drive file ID from any standard sharing-link format. Returns `null` if not a Drive URL |
+| `driveUrl(url, mode)` | Transforms a Drive URL to the right format for the use case (`view`, `preview`, `image`, `download`). Pass-through for non-Drive URLs |
+
+### Translation pattern
+
+Every entry in the data arrays above carries both languages with the
+suffix convention `field` (English) and `field_es` (Spanish). The
+helper `tx(obj, "field")` automatically picks the right one based on
+the current language. Render functions use `tx()` for object fields
+and `t("English","Español")` for inline strings. Subtitle templates
+inside `PAGE_HEROES` use `{placeholder}` syntax for runtime values
+(e.g. `"{up} upcoming · {pa} past"`) which are substituted by `fmt()`.

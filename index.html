@@ -38,7 +38,39 @@
     }
   </script>
   <style>
-    body{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+    /* ── Global responsive baseline ─────────────────────────────────
+       html: stop iOS Safari from auto-zooming text on rotate, give a
+             fixed scroll-padding so #anchor jumps clear the fixed header
+       body: hard-stop horizontal overflow (a single overflowing child
+             would otherwise create an unwanted page-wide scrollbar) */
+    html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:80px}
+    body{-webkit-font-smoothing:antialiased;scroll-behavior:smooth;overflow-x:hidden;text-rendering:optimizeLegibility}
+    /* Long URLs / addresses must wrap inside narrow containers, never
+       force horizontal scroll. Applied to text-content elements only. */
+    p, li, td{overflow-wrap:break-word;word-wrap:break-word}
+    /* Respect "reduce motion" — disables animations & transitions for users who
+       opt out (vestibular disorders, etc.) but keeps the layout intact. */
+    @media (prefers-reduced-motion: reduce) {
+      *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+    }
+    /* Visible focus ring for keyboard navigation (does not show on mouse clicks).
+       Modern browsers automatically follow each element's own border-radius,
+       so we deliberately don't set border-radius here — that would override
+       circular/pill-shaped buttons. */
+    :focus-visible{outline:2px solid #0170B9;outline-offset:2px}
+    /* iOS notched-device safe-area: keep the floating back-to-top button and
+       footer above the home indicator */
+    #btt{bottom:max(1.25rem,env(safe-area-inset-bottom));right:max(1.25rem,env(safe-area-inset-right))}
+    footer{padding-bottom:max(1.25rem,env(safe-area-inset-bottom))}
+    .sidebar-panel{padding-bottom:env(safe-area-inset-bottom)}
+    /* Gallery dot hit-area expander — visible dot stays small but the
+       click region is 24×24, with a small inner indicator. Colors match
+       the original slate-300 / brand-600 palette (dots sit on the light
+       page background, BELOW the dark gallery container). */
+    .gal-dot-wrap{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;padding:0;background:transparent;border:none;cursor:pointer}
+    .gal-dot-wrap .gal-dot{width:8px;height:8px;border-radius:9999px;background:#cbd5e1;transition:all .25s}
+    .gal-dot-wrap:hover .gal-dot{background:#94a3b8}
+    .gal-dot-wrap.active .gal-dot{width:24px;background:#0170B9}
     .page{display:none}.page.active{display:block;animation:pageIn .4s ease}
     @keyframes pageIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
     @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
@@ -89,19 +121,19 @@
   <!-- HEADER — transparent on home hero, solid on scroll/other pages -->
   <header class="fixed top-0 left-0 right-0 z-[1000] border-b transition-all duration-300 hdr-transparent" id="hdr">
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
-      <div class="flex items-center justify-between py-3 gap-4">
-        <a class="flex items-center gap-2.5 no-underline shrink-0 group" href="#home" data-nav="home">
-          <img src="assets/images/cropped-logo-120x56.png" alt="NETA 65 Logo" class="h-9 rounded transition-transform group-hover:scale-105">
-          <div>
-            <div class="hdr-brand-title text-[.9rem] font-bold text-slate-900 leading-tight transition-colors">Grapevine / La Viña</div>
-            <div class="hdr-brand-sub text-[.6rem] text-slate-500 font-medium tracking-wider uppercase transition-colors">NETA 65 Committee</div>
+      <div class="flex items-center justify-between py-3 gap-2 sm:gap-4">
+        <a class="flex items-center gap-2 sm:gap-2.5 no-underline min-w-0 group" href="#home" data-nav="home">
+          <img src="assets/images/cropped-logo-120x56.png" alt="NETA 65 Logo" class="h-9 rounded shrink-0 transition-transform group-hover:scale-105">
+          <div class="min-w-0">
+            <div class="hdr-brand-title text-[.85rem] sm:text-[.9rem] font-bold text-slate-900 leading-tight transition-colors truncate">Grapevine / La Viña</div>
+            <div class="hdr-brand-sub text-[.6rem] text-slate-500 font-medium tracking-wider uppercase transition-colors hidden min-[400px]:block truncate">NETA 65 Committee</div>
           </div>
         </a>
-        <div class="flex items-center gap-3 shrink-0">
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
           <a href="https://neta65.org" target="_blank" rel="noopener" class="hidden sm:flex items-center gap-1 text-slate-500 text-xs transition-colors no-underline"><i class="bi bi-globe2"></i> neta65.org</a>
           <a href="mailto:grapevine@neta65.org" id="hdrContact" class="hidden sm:flex items-center gap-1 text-slate-500 text-xs transition-colors no-underline"><i class="bi bi-envelope"></i> <span id="hdrContactTxt">Contact</span></a>
-          <button id="langBtn" class="hdr-menu-btn border border-slate-200 rounded-lg px-2 py-1 hover:bg-slate-100 transition-all text-xs font-bold leading-none bg-transparent cursor-pointer" onclick="toggleLang()" aria-label="Switch language" title="Cambiar idioma / Switch language">ES</button>
-          <button class="hdr-menu-btn border border-slate-200 rounded-lg p-1.5 hover:bg-slate-100 transition-all text-xl leading-none bg-transparent cursor-pointer" onclick="toggleSidebar()" aria-label="Open menu"><i class="bi bi-list"></i></button>
+          <button id="langBtn" class="hdr-menu-btn border border-slate-200 rounded-lg min-w-[40px] h-10 px-2 hover:bg-slate-100 transition-all text-xs font-bold leading-none bg-transparent cursor-pointer flex items-center justify-center" onclick="toggleLang()" aria-label="Switch language" title="Cambiar idioma / Switch language">ES</button>
+          <button class="hdr-menu-btn border border-slate-200 rounded-lg w-10 h-10 hover:bg-slate-100 transition-all text-xl leading-none bg-transparent cursor-pointer flex items-center justify-center" onclick="toggleSidebar()" aria-label="Open menu"><i class="bi bi-list"></i></button>
         </div>
       </div>
     </div>
@@ -112,7 +144,7 @@
     <nav class="sidebar-panel fixed top-0 right-0 bottom-0 w-[280px] max-w-[85vw] bg-white shadow-[-4px_0_20px_rgba(0,0,0,.1)] flex flex-col overflow-y-auto" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between p-4 border-b border-slate-200">
         <h6 class="m-0 font-bold text-slate-900">Menu</h6>
-        <button class="text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg p-1 transition-all text-lg leading-none" onclick="closeSidebar()" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+        <button class="text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg w-10 h-10 transition-all text-lg leading-none flex items-center justify-center" onclick="closeSidebar()" aria-label="Close"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="p-3 flex-1"><ul class="list-none m-0 p-0" id="mNav"></ul></div>
       <div class="p-4 border-t border-slate-200 space-y-2">
@@ -161,17 +193,17 @@
     <div class="cmodal-box bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col" onclick="event.stopPropagation()">
       <div class="bg-gradient-to-r from-brand-700 to-brand-500 text-white px-5 py-4 flex items-center justify-between rounded-t-2xl">
         <h5 class="m-0 font-bold text-lg" id="evMT"></h5>
-        <button class="text-white/80 hover:text-white hover:bg-white/15 rounded-lg p-1 transition-all text-lg leading-none" onclick="closeModal()" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+        <button class="text-white/80 hover:text-white hover:bg-white/15 rounded-lg w-10 h-10 transition-all text-lg leading-none flex items-center justify-center shrink-0" onclick="closeModal()" aria-label="Close"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="p-6" id="evMB"></div>
-      <div class="px-5 py-3 border-t border-slate-200 flex gap-2 justify-between">
-        <div class="flex gap-2">
-          <button type="button" id="evMS" class="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-brand-50 text-slate-600 hover:text-brand-600 rounded-lg text-sm font-medium transition-colors border-none cursor-pointer"><i class="bi bi-share"></i> <span id="evMSL">Share</span></button>
-          <button type="button" id="evMC" class="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-brand-50 text-slate-600 hover:text-brand-600 rounded-lg text-sm font-medium transition-colors border-none cursor-pointer"><i class="bi bi-calendar-plus"></i> <span id="evMCL">Calendar</span></button>
+      <div class="px-4 sm:px-5 py-3 border-t border-slate-200 flex flex-wrap gap-2 justify-between">
+        <div class="flex gap-2 flex-wrap">
+          <button type="button" id="evMS" class="inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] bg-slate-100 hover:bg-brand-50 text-slate-600 hover:text-brand-600 rounded-lg text-sm font-medium transition-colors border-none cursor-pointer"><i class="bi bi-share"></i> <span id="evMSL">Share</span></button>
+          <button type="button" id="evMC" class="inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] bg-slate-100 hover:bg-brand-50 text-slate-600 hover:text-brand-600 rounded-lg text-sm font-medium transition-colors border-none cursor-pointer"><i class="bi bi-calendar-plus"></i> <span id="evMCL">Calendar</span></button>
         </div>
-        <div class="flex gap-2">
-          <a href="#" id="evMF" class="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors no-underline" target="_blank" rel="noopener"><i class="bi bi-file-earmark-pdf"></i> <span id="evMFL">View Flyer</span></a>
-          <button id="evMClose" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium border border-slate-200 transition-colors" onclick="closeModal()">Close</button>
+        <div class="flex gap-2 flex-wrap">
+          <a href="#" id="evMF" class="inline-flex items-center gap-1.5 px-4 py-2 min-h-[40px] bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors no-underline" target="_blank" rel="noopener"><i class="bi bi-file-earmark-pdf"></i> <span id="evMFL">View Flyer</span></a>
+          <button id="evMClose" class="px-4 py-2 min-h-[40px] bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium border border-slate-200 transition-colors" onclick="closeModal()">Close</button>
         </div>
       </div>
     </div>
@@ -185,7 +217,7 @@
         <div class="flex items-center gap-2 shrink-0">
           <a href="#" id="pdfMO" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg text-xs font-medium transition-colors no-underline border border-white/20"><i class="bi bi-box-arrow-up-right"></i> <span class="hidden sm:inline" id="pdfMOL">Open</span></a>
           <a href="#" id="pdfMD" download class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg text-xs font-medium transition-colors no-underline border border-white/20"><i class="bi bi-download"></i> <span class="hidden sm:inline" id="pdfMDL">Download</span></a>
-          <button class="text-white/80 hover:text-white hover:bg-white/15 rounded-lg p-1.5 transition-all text-lg leading-none border-none bg-transparent cursor-pointer" onclick="closePdf()" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+          <button class="text-white/80 hover:text-white hover:bg-white/15 rounded-lg w-10 h-10 transition-all text-lg leading-none border-none bg-transparent cursor-pointer flex items-center justify-center shrink-0" onclick="closePdf()" aria-label="Close"><i class="bi bi-x-lg"></i></button>
         </div>
       </div>
       <div class="flex-1 bg-slate-100 relative" id="pdfMB">
@@ -405,7 +437,8 @@ const TIMELINE = [
   {year:"July 2025",title:"International Convention — Vancouver",title_es:"Convención Internacional — Vancouver",desc:"Special coverage of the 2025 International Convention celebrating A.A.'s 90th anniversary.",desc_es:"Cobertura especial de la Convención Internacional 2025 celebrando el 90 aniversario de A.A.",type:"grapevine"},
   {year:"2025",title:"Fellowship-Wide Survey Ordered",title_es:"Se Ordena Encuesta de Toda la Comunidad",desc:"The 75th Conference directs the Grapevine Board to survey the full Fellowship on relevance, usefulness, and viability.",desc_es:"La 75ª Conferencia ordena a la Junta de Grapevine encuestar a toda la Comunidad sobre relevancia, utilidad y viabilidad.",type:"both"},
 ];
-const SPOTIFY_SHOW_ID = "714djcL57SFf0Nzf40CL8Q";
+const APPLE_SHOW_ID = "1591924167";
+const APPLE_SHOW_SLUG = "aa-grapevines-podcast";
 const YOUTUBE_VIDEOS = [
   // — Original 6 —
   { id:"V3RzyHdgQCY", title:"AA's Twelfth Step Tools: Grapevine and La Viña" },
@@ -539,23 +572,25 @@ const YOUTUBE_VIDEOS = [
   { id:"4tXWts3Dzxc", title:"Twelve Steps Save a Life" },
   { id:"_mjB6hXYHn4", title:"Victor E. is back" },
 ];
-const SPOTIFY_EPISODES = [
-  { id:"0QVMHiSs9cGEpi1kyFWMss", title:"Getting Sober When You're Older" },
-  { id:"2C7XcJtkWYpj5dtbJKyUYf", title:"Contrary Action" },
-  { id:"5jfD8NcM62PKsUc3xGQnBp", title:"Isn't Every Hour Happy Hour?" },
-  { id:"0jjfhwX1Cp2qaRDXZ2eodz", title:"Just Like Dad" },
-  { id:"2EB1ajgSe7xkXwmxkwJ9AH", title:"Embrace Who I Am" },
-  { id:"3KsizphogKlRoyWPwzTYhI", title:"Mustard Seed" },
-  { id:"38jGbffYy2EQuTkAZRGGI5", title:"Growing Up in AA" },
-  { id:"6OIF2eOtXYIZPru4kBOpsI", title:"Right on Time" },
-  { id:"3mZOMQjFOVXu8inbTWSk7x", title:"Welcome Home, Mary" },
-  { id:"4eawKVEY7b4ryxP95DQ4Rl", title:"Learning to Trust" },
-  { id:"2JBkucathObZT0uOsujiUC", title:"We're Your Friends" },
-  { id:"6ewmYHTBr96JH9hfdVR2er", title:"Get in the Car" },
-  { id:"7zuJbmbLFAPmk0BqEmQMyB", title:"Live from the International Convention in Vancouver" },
-  { id:"6nCtcGCQjVRL9stMzRR6MA", title:"Differences Fall Away" },
-  { id:"5nj4NEENMmX7GbY38i8KL5", title:"Message of Hope: Corrections Conference" },
-  { id:"03q517FDvdKUEDRLNKAv4t", title:"Suffering Transmuted" },
+// Apple Podcasts episode IDs (the numeric `i=` value from each episode page).
+// Apple's embed plays full episodes anonymously — no login required, unlike Spotify.
+const PODCAST_EPISODES = [
+  { id:"1000756687022", title:"Getting Sober When You're Older" },
+  { id:"1000755498906", title:"Contrary Action" },
+  { id:"1000753948714", title:"Isn't Every Hour Happy Hour?" },
+  { id:"1000752397647", title:"Just Like Dad" },
+  { id:"1000750962164", title:"Embrace Who I Am" },
+  { id:"1000748853886", title:"Mustard Seed" },
+  { id:"1000736048163", title:"Growing Up in AA" },
+  { id:"1000702444213", title:"Right on Time" },
+  { id:"1000697305342", title:"Welcome Home, Mary" },
+  { id:"1000734987232", title:"Learning to Trust" },
+  { id:"1000708058911", title:"We're Your Friends" },
+  { id:"1000703414182", title:"Get in the Car" },
+  { id:"1000719447601", title:"Live from the International Convention in Vancouver" },
+  { id:"1000706311968", title:"Differences Fall Away" },
+  { id:"1000678119467", title:"Message of Hope: Corrections Conference" },
+  { id:"1000705209839", title:"Suffering Transmuted" },
 ];
 // Grapevine Instagram @alcoholicsanonymous_gv (verified official)
 const INSTAGRAM_POSTS = [
@@ -566,17 +601,268 @@ const INSTAGRAM_POSTS = [
 ];
 // Auto-sort announcements newest first and filter out older than 90 days
 const RECENT_ANN=(function(){const cutoff=new Date();cutoff.setDate(cutoff.getDate()-90);return ANNOUNCEMENTS.filter(a=>new Date(a.date+"T23:59:59")>=cutoff).sort((a,b)=>b.date.localeCompare(a.date))})();
+
+/* ── Page Heroes ─────────────────────────────────────────────────
+   One entry per page. Each hero produces the gradient banner at
+   the top of a page (icon + title + subtitle). Subtitles support
+   {placeholder} variables that render functions inject at runtime
+   (e.g. event counts). Edit the title/subtitle text here — never
+   touch the render functions.
+   ────────────────────────────────────────────────────────────── */
+const PAGE_HEROES = {
+  home:       { icon:"",                       title:"Grapevine &amp;<br>La Viña Committee",    title_es:"Comité de<br>Grapevine y La Viña",        sub:"AA's Meeting in Print — Our Story in Every Language",                       sub_es:"La Reunión Impresa de AA — Nuestra Historia en Cada Idioma" },
+  about:      { icon:"bi-info-circle-fill",    title:"About Grapevine &amp; La Viña",           title_es:"Acerca de Grapevine y La Viña",          sub:"AA's Meeting in Print — 80+ years of history, {milestones} milestones",     sub_es:"La Reunión Impresa de AA — Más de 80 años de historia, {milestones} hitos" },
+  gvr:        { icon:"bi-person-badge-fill",   title:"GVR / RLV Corner",                        title_es:"Rincón del GVR / RLV",                   sub:"Everything Grapevine &amp; La Viña Representatives need",                   sub_es:"Todo lo que necesitan los Representantes de Grapevine y La Viña" },
+  subscribe:  { icon:"bi-cart-fill",           title:"Subscribe",                               title_es:"Suscribirse",                            sub:"Support AA Grapevine &amp; La Viña — entirely self-supporting through subscriptions", sub_es:"Apoya a AA Grapevine y La Viña — completamente autofinanciados mediante suscripciones" },
+  contribute: { icon:"bi-pencil-square",       title:"Contribute to Grapevine &amp; La Viña",   title_es:"Contribuir a Grapevine y La Viña",       sub:"Share your experience, strength, and hope with AA members worldwide",       sub_es:"Comparte tu experiencia, fortaleza y esperanza con miembros de AA en todo el mundo" },
+  meeting:    { icon:"bi-camera-video-fill",   title:"Meeting Details",                         title_es:"Detalles de la Reunión",                 sub:"Monthly committee meeting schedule and Zoom info",                          sub_es:"Horario de la reunión mensual del comité e información de Zoom" },
+  events:     { icon:"bi-calendar-event-fill", title:"Events",                                  title_es:"Eventos",                                sub:"{up} upcoming &middot; {pa} past",                                          sub_es:"{up} próximos &middot; {pa} pasados" },
+  documents:  { icon:"bi-folder-fill",         title:"Documents",                               title_es:"Documentos",                             sub:"Reports, meeting notes, and presentation slides",                           sub_es:"Informes, minutas y presentaciones" },
+  photos:     { icon:"bi-images",              title:"Event Gallery",                           title_es:"Galería de Eventos",                     sub:"Grapevine &amp; La Viña at NETA 65 events, assemblies, and workshops",      sub_es:"Grapevine y La Viña en eventos, asambleas y talleres de NETA 65" },
+  media:      { icon:"bi-play-circle-fill",    title:"Listen &amp; Watch",                      title_es:"Escuchar y Ver",                         sub:"Podcast, videos, and social media from AA Grapevine — refreshes each visit", sub_es:"Podcast, videos y redes sociales de AA Grapevine — se actualizan en cada visita" },
+  resources:  { icon:"bi-link-45deg",          title:"Resources",                               title_es:"Recursos",                               sub:"{count} links to help you connect, serve, and grow",                        sub_es:"{count} enlaces para ayudarte a conectar, servir y crecer" },
+};
+
+/* ── Home Page Quick & Browse Cards ──────────────────────────────
+   The two card grids on the Home page. Each entry navigates to
+   another page. Use {dynamic} placeholders inside desc/count and
+   render code substitutes via fmt(). Set `desc`/`count` to plain
+   strings if no substitution is needed.
+   ────────────────────────────────────────────────────────────── */
+const HOME_QUICK_CARDS = [
+  { id:"meeting",    icon:"bi-camera-video-fill",  bg:"bg-sky-50 text-sky-600",      title:"Next Meeting",  title_es:"Próxima Reunión",  desc:"{date}<br>{time}",                                                              desc_es:"{date}<br>{time}",                                                              count:"Zoom: {meetingId}",          count_es:"Zoom: {meetingId}" },
+  { id:"events",     icon:"bi-calendar-event-fill",bg:"bg-pink-50 text-pink-600",    title:"Events",        title_es:"Eventos",          desc:"{nextLine}",                                                                    desc_es:"{nextLine}",                                                                    count:"{n} upcoming",               count_es:"{n} próximos" },
+  { id:"subscribe",  icon:"bi-cart-fill",          bg:"bg-green-50 text-green-600",  title:"Subscribe",     title_es:"Suscribirse",      desc:"Print, digital, or both — support AA's self-supporting journal",                desc_es:"Impresa, digital o ambas — apoya la revista autofinanciada de AA",              count:"From $2.99/mo",              count_es:"Desde $2.99/mes" },
+  { id:"contribute", icon:"bi-pencil-square",      bg:"bg-amber-50 text-amber-600",  title:"Contribute",    title_es:"Contribuir",       desc:"Submit your story, art, or photos to Grapevine or La Viña",                     desc_es:"Envía tu historia, arte o fotos a Grapevine o La Viña",                         count:"Editorial calendar",         count_es:"Calendario editorial" },
+];
+const HOME_BROWSE_CARDS = [
+  { id:"about",     icon:"bi-info-circle-fill",  bg:"bg-blue-50 text-blue-600",   title:"About GV / La Viña",  title_es:"Acerca de GV / La Viña", desc:"Learn about AA's Meeting in Print, its history, and role in the service structure",                  desc_es:"Conoce la Reunión Impresa de AA, su historia y papel en la estructura de servicio",                count:"Since 1944",                  count_es:"Desde 1944" },
+  { id:"gvr",       icon:"bi-person-badge-fill",  bg:"bg-purple-50 text-purple-600",title:"GVR Corner",          title_es:"Rincón del RLV",        desc:"Resources, guides, and ideas for Grapevine &amp; La Viña Representatives",                            desc_es:"Recursos, guías e ideas para Representantes de Grapevine y La Viña",                                count:"Handbooks &amp; tools",        count_es:"Manuales y herramientas" },
+  { id:"documents", icon:"bi-folder-fill",        bg:"bg-purple-50 text-purple-600",title:"Documents",           title_es:"Documentos",            desc:"Committee reports, meeting notes, and slides",                                                       desc_es:"Informes del comité, minutas y presentaciones",                                                    count:"{r} reports &middot; {n} notes", count_es:"{r} informes &middot; {n} minutas" },
+  { id:"photos",    icon:"bi-images",              bg:"bg-pink-50 text-pink-600",   title:"Event Gallery",       title_es:"Galería de Eventos",    desc:"Photos from our booths, workshops, and assemblies",                                                  desc_es:"Fotos de nuestras mesas, talleres y asambleas",                                                    count:"{p} photos",                  count_es:"{p} fotos" },
+  { id:"media",     icon:"bi-play-circle-fill",   bg:"bg-green-50 text-green-600",  title:"Listen &amp; Watch",  title_es:"Escuchar y Ver",        desc:"Podcast, YouTube, and Instagram (@alcoholicsanonymous_gv &amp; @alcoholicosanonimos_lv)",             desc_es:"Podcast, YouTube e Instagram (@alcoholicsanonymous_gv y @alcoholicosanonimos_lv)",                  count:"New episodes weekly",         count_es:"Episodios nuevos cada semana" },
+  { id:"resources", icon:"bi-link-45deg",         bg:"bg-sky-50 text-sky-600",     title:"Resources",            title_es:"Recursos",              desc:"Apps, books, sobriety calculator, and more",                                                         desc_es:"Aplicaciones, libros, calculadora de sobriedad y más",                                              count:"{n} links",                   count_es:"{n} enlaces" },
+];
+
+/* ── Subscription Tiers ──────────────────────────────────────────
+   Each tier produces one pricing card on the Subscribe page.
+   `section`: "gv" or "lv" — groups cards under section headers
+   `theme`:   "brand" (blue) or "amber"
+   `badge`:   optional ribbon ("Best Value", "Promo", etc.)
+   `features`: list of {ok, text, text_es} — ok=false renders an X
+   ────────────────────────────────────────────────────────────── */
+const SUBSCRIPTION_TIERS = [
+  // — Grapevine —
+  { section:"gv", theme:"brand", name:"Print Only", name_es:"Solo Impresa", price:"$36",
+    period:"per year (12 issues)", period_es:"por año (12 ediciones)",
+    features:[
+      { ok:true,  text:"12 monthly print issues mailed",       text_es:"12 ediciones impresas mensuales por correo" },
+      { ok:true,  text:"Stories from AA members worldwide",    text_es:"Historias de miembros de AA en todo el mundo" },
+      { ok:false, text:"No digital/app access",                text_es:"Sin acceso digital/app" },
+    ],
+    ctaUrl:"https://www.aagrapevine.org/store/us-subscriptions",
+    ctaLabel:"Subscribe", ctaLabel_es:"Suscribirse",
+    badge:null, badge_es:null,
+  },
+  { section:"gv", theme:"brand", name:"Digital Only", name_es:"Solo Digital", price:"$2.99",
+    period:"per month, or $29.99/year", period_es:"por mes, o $29.99/año",
+    features:[
+      { ok:true, text:"Full website &amp; app access",         text_es:"Acceso completo al sitio web y app" },
+      { ok:true, text:"Story archive (1944–present)",          text_es:"Archivo de historias (1944–presente)" },
+      { ok:true, text:"Audio Grapevine",                       text_es:"Audio Grapevine" },
+      { ok:true, text:"Podcast access in-app",                 text_es:"Acceso al podcast en la app" },
+    ],
+    ctaUrl:"https://www.aagrapevine.org/store/us-subscriptions",
+    ctaLabel:"Subscribe", ctaLabel_es:"Suscribirse",
+    badge:null, badge_es:null,
+  },
+  { section:"gv", theme:"brand-highlight", name:"Complete (Print + Digital)", name_es:"Completa (Impresa + Digital)", price:"$69",
+    period:"per year, or $7/month", period_es:"por año, o $7/mes",
+    features:[
+      { ok:true, text:"12 monthly print issues",               text_es:"12 ediciones impresas mensuales" },
+      { ok:true, text:"Full digital &amp; app access",         text_es:"Acceso completo digital y app" },
+      { ok:true, text:"Complete story archive",                text_es:"Archivo completo de historias" },
+      { ok:true, text:"Audio Grapevine",                       text_es:"Audio Grapevine" },
+      { ok:true, text:"Best value — print + digital",          text_es:"Mejor valor — impresa + digital" },
+    ],
+    ctaUrl:"https://www.aagrapevine.org/store/us-subscriptions",
+    ctaLabel:"Subscribe", ctaLabel_es:"Suscribirse",
+    badge:"Best Value", badge_es:"Mejor Valor",
+  },
+  // — La Viña —
+  { section:"lv", theme:"amber-highlight", name:"La Viña Print", name_es:"La Viña Impresa", price:"$7.50",
+    period:"6-month subscription (3 issues)", period_es:"Suscripción de 6 meses (3 ediciones)",
+    features:[
+      { ok:true, text:"3 bimonthly print issues mailed",       text_es:"3 ediciones bimestrales impresas por correo" },
+      { ok:true, text:"Stories in Spanish from AA members",    text_es:"Historias en español de miembros de AA" },
+      { ok:true, text:"Special promotional price",             text_es:"Precio promocional especial" },
+    ],
+    ctaUrl:"https://www.aalavina.org/tienda/suscripcion-revista-impresa-la-vina-6-meses",
+    ctaLabel:"Suscribirse — $7.50", ctaLabel_es:"Suscribirse — $7.50",
+    badge:"Promo", badge_es:"Promo",
+  },
+  { section:"lv", theme:"brand", name:"La Viña Digital", name_es:"La Viña Digital", price:"$2.99",
+    period:"per month, or $29.99/year", period_es:"por mes, o $29.99/año",
+    features:[
+      { ok:true, text:"Bimonthly magazine in Spanish",         text_es:"Revista bimestral en español" },
+      { ok:true, text:"Full La Viña archive",                  text_es:"Archivo completo de La Viña" },
+      { ok:true, text:"Audio of each article",                 text_es:"Audio de cada artículo" },
+      { ok:true, text:"Podcast in Spanish",                    text_es:"Podcast en español" },
+    ],
+    ctaUrl:"https://www.aalavina.org",
+    ctaLabel:"Suscribirse", ctaLabel_es:"Suscribirse",
+    badge:null, badge_es:null,
+  },
+];
+// Subscribe page — section headers above each group of tiers
+const SUBSCRIPTION_SECTIONS = {
+  gv: { icon:"bi-journal-richtext", iconBg:"bg-brand-50 text-brand-600",  name:"AA Grapevine", name_es:"AA Grapevine", tagline:"Monthly magazine — print, digital, or both", tagline_es:"Revista mensual — impresa, digital o ambas" },
+  lv: { icon:"bi-translate",         iconBg:"bg-amber-50 text-amber-600", name:"La Viña",       name_es:"La Viña",       tagline:"Bimonthly Spanish-language magazine",         tagline_es:"Revista bimestral en español" },
+};
+// Subscribe page — gift subscription card (sits beside LV tiers)
+const SUBSCRIPTION_GIFT = {
+  icon:"bi-gift",
+  title:"Gift Subscriptions &amp; Carry the Message",  title_es:"Suscripciones de Regalo y Lleva el Mensaje",
+  body:"Give the gift of Grapevine or La Viña to a sponsee, newcomer, or someone who can't afford a subscription. Perfect for:",
+  body_es:"Regala una suscripción de Grapevine o La Viña a un ahijado, recién llegado o alguien que no puede pagarla. Perfecto para:",
+  bullets:[
+    { text:"Anniversary gifts",                   text_es:"Regalos de aniversario" },
+    { text:"Correctional &amp; treatment facilities", text_es:"Instituciones correccionales y de tratamiento" },
+    { text:"Doctor's offices &amp; waiting rooms",     text_es:"Consultorios médicos y salas de espera" },
+    { text:"Newcomer welcome packages",                text_es:"Paquetes de bienvenida para recién llegados" },
+  ],
+  ctaUrl:"https://www.aagrapevine.org/carry-the-message",
+  ctaLabel:"Carry the Message", ctaLabel_es:"Lleva el Mensaje",
+  ctaIcon:"bi-heart",
+};
+
+/* ── Subscription Support Contact ────────────────────────────────
+   Phone numbers shown on the Subscribe page. Update when AAGV
+   changes their lines.
+   ────────────────────────────────────────────────────────────── */
+const SUPPORT_CONTACT = {
+  prompt:"Need help with subscriptions?", prompt_es:"¿Necesitas ayuda con suscripciones?",
+  lines:[
+    { label:"USA:",          label_es:"EE.UU.:",        value:"(800) 631-6025" },
+    { label:"International:",label_es:"Internacional:", value:"+1 (570) 567-0437" },
+    { label:"En Español:",   label_es:"En Español:",    value:"(800) 640-8781" },
+  ],
+};
+
+/* ── Submission Types (Contribute page) ──────────────────────────
+   The "What You Can Submit" cards. Add or remove as needed.
+   ────────────────────────────────────────────────────────────── */
+const SUBMISSION_TYPES = [
+  { icon:"bi-journal-text",
+    title:"Stories", title_es:"Historias",
+    body:'Most articles are first-person accounts. <strong>Standing departments</strong> accept stories year-round:',
+    body_es:'La mayoría de los artículos son relatos en primera persona. Las <strong>secciones permanentes</strong> aceptan historias todo el año:',
+    note:"Emotional Sobriety, Sponsorship, Newcomers, Youth Enjoying Sobriety, Old-Timers, Home Group, Steps &amp; Traditions",
+    note_es:"Sobriedad Emocional, Padrinazgo, Recién Llegados, Jóvenes en Sobriedad, Veteranos, Grupo Base, Pasos y Tradiciones",
+  },
+  { icon:"bi-palette",
+    title:"Art, Cartoons &amp; Photos", title_es:"Arte, Caricaturas y Fotos",
+    body:'Original cartoons, high-resolution photos (300 dpi JPEG) of AA meetings for "If Walls Could Talk," and artwork.',
+    body_es:'Caricaturas originales, fotos de alta resolución (300 dpi JPEG) de reuniones de AA para "If Walls Could Talk", y obras de arte.',
+    note:"", note_es:"",
+  },
+  { icon:"bi-emoji-laughing",
+    title:"Humor", title_es:"Humor",
+    body:"Jokes and funny stories for the humor section — laughter is part of recovery!",
+    body_es:"Chistes e historias divertidas para la sección de humor — ¡la risa es parte de la recuperación!",
+    note:"", note_es:"",
+  },
+];
+
+/* ── Submit Channels (Contribute page) ───────────────────────────
+   Per-magazine submission methods. `theme` controls color (brand
+   = blue for GV, amber for LV). `items` list any number of methods.
+   ────────────────────────────────────────────────────────────── */
+const SUBMIT_CHANNELS = {
+  gv: {
+    theme:"brand",
+    heading:"How to Submit", heading_es:"Cómo Enviar",
+    headingIcon:"bi-send",
+    items:[
+      { num:1, label:"Online (easiest)", label_es:"En línea (lo más fácil)", text:"aagrapevine.org/share",                                     url:"https://www.aagrapevine.org/share" },
+      { num:2, label:"Email",            label_es:"Correo electrónico",      text:"editorial@aagrapevine.org",                                  url:"mailto:editorial@aagrapevine.org" },
+      { num:3, label:"Mail",             label_es:"Correo postal",           text:"Grapevine Editorial, 475 Riverside Drive, New York, NY 10115", url:"" },
+    ],
+    footer:"Include your full name, address, phone, and email. Keep a copy — manuscripts cannot be returned. Stories are needed <strong>5 months before</strong> publication.",
+    footer_es:"Incluye tu nombre completo, dirección, teléfono y correo electrónico. Guarda una copia — los manuscritos no se devuelven. Las historias se necesitan <strong>5 meses antes</strong> de la publicación.",
+  },
+  lv: {
+    theme:"amber",
+    heading:"Contribute to La Viña (Spanish)", heading_es:"Contribuir a La Viña (Español)",
+    headingIcon:"bi-translate",
+    intro:"La Viña accepts stories, art, and photos from AA members in Spanish. Share your experience, strength, and hope with the Spanish-speaking community.",
+    intro_es:"La Viña acepta historias, arte y fotos de miembros de AA en español. Comparta su experiencia, fortaleza y esperanza con la comunidad hispanohablante.",
+    items:[
+      { num:1, label:"Online", label_es:"En línea",          text:"aalavina.org/comparte-tu-historia",                          url:"https://www.aalavina.org/comparte-tu-historia" },
+      { num:2, label:"Email",  label_es:"Correo electrónico", text:"lavina@aagrapevine.org",                                    url:"mailto:lavina@aagrapevine.org" },
+      { num:3, label:"Mail",   label_es:"Correo postal",      text:"La Viña Editorial, 475 Riverside Drive, New York, NY 10115", url:"" },
+    ],
+    footer:"Include your full name, address, phone, and email. Stories are needed <strong>5 months before</strong> publication.",
+    footer_es:"Incluya su nombre completo, dirección, teléfono y correo electrónico. Las historias se necesitan <strong>5 meses antes</strong> de la publicación.",
+    extraCta:{ url:"https://www.aalavina.org/sites/default/files/2020-08/Pautas%20para%20Colaborar%20con%20La%20Vin%CC%83a.pdf", icon:"bi-file-earmark-pdf", label:"Pautas para Colaborar (PDF)", label_es:"Pautas para Colaborar (PDF)" },
+  },
+};
 /* ================================================================ END CONFIG ================================================================ */
 
 // Language state (loaded from localStorage)
 let _lang=localStorage.getItem("gv_lang")||"en";
 // Translation helper — returns English or Spanish based on current lang
 function t(en,es){return _lang==="es"?es:en}
+// Object-field translation — picks `<field>_es` when in Spanish mode, else `<field>`
+// Used by data-driven render code so each array entry can carry both languages
+function tx(obj,field){if(!obj)return"";return _lang==="es"&&obj[field+"_es"]?obj[field+"_es"]:(obj[field]||"")}
+// Tiny string-template helper — replaces {key} placeholders with vars[key]
+// Used by PAGE_HEROES subtitles so dynamic counts like {N} can be injected at render time
+function fmt(s,vars){if(!s)return"";if(!vars)return s;return s.replace(/\{(\w+)\}/g,(_,k)=>vars[k]!==undefined?vars[k]:"")}
+// Standard page hero block — DRYs up the duplicated hero markup across every page
+// `key` looks up an entry in PAGE_HEROES; `vars` are substituted into the subtitle template
+function heroHtml(key,vars){const h=PAGE_HEROES[key];if(!h)return"";const title=fmt(tx(h,"title"),vars);const sub=fmt(tx(h,"sub"),vars);const iconHtml=h.icon?`<i class="bi ${h.icon}"></i> `:"";return `<div class="bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 text-white pt-20 md:pt-24 pb-10 md:pb-14 relative overflow-hidden hero-mesh"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
+      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">${iconHtml}${title}</h1>
+      <p class="opacity-80 text-sm mt-1">${sub}</p>
+    </div></div>`}
 // Re-render all pages (called on language toggle)
 function renderAll(){renderNav();renderHome();renderAbout();renderGVR();renderSubscribe();renderContribute();renderMeeting();renderEvents();renderDocuments();renderPhotos();renderMedia();renderResources();applyLang();if(currentPage!=="home")clearInterval(cdTimer);if(currentPage!=="photos")stopGal()}
 
 // Helpers — supports full URLs (Google Drive, etc.) or local paths
 function fp(f,n){if(!n)return"#";if(n.startsWith("http://") || n.startsWith("https://"))return n;const b=BASE_PATH?BASE_PATH.replace(/\/$/,""):".";return b+"/"+f+"/"+n}
+// Google Drive URL handling — accepts ANY of these sharing-link formats and
+// extracts the file ID:
+//   https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+//   https://drive.google.com/file/d/FILE_ID/preview
+//   https://drive.google.com/open?id=FILE_ID
+//   https://drive.google.com/uc?export=download&id=FILE_ID
+//   https://docs.google.com/(document|spreadsheets|presentation)/d/FILE_ID/...
+// Returns null when the URL is not a recognized Drive/Docs URL.
+function driveFileId(url){
+  if(!url||typeof url!=="string")return null;
+  let m;
+  if((m=url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)))return m[1];
+  if((m=url.match(/\/(?:document|spreadsheets|presentation)\/d\/([a-zA-Z0-9_-]+)/)))return m[1];
+  if((m=url.match(/[?&]id=([a-zA-Z0-9_-]+)/)))return m[1];
+  return null;
+}
+// Transforms a URL into the right form for a given use case.
+// Pass-through (returns as-is) if the URL is not a Drive/Docs URL.
+//   mode "view"     — open the file in Drive's viewer page (default; use for <a href>)
+//   mode "preview"  — embeddable preview URL (use for iframe src — PDFs, Docs, Slides, Sheets)
+//   mode "image"    — image URL suitable for <img src> (uses Drive thumbnail endpoint)
+//   mode "download" — direct-download URL (use for the modal's Download button)
+function driveUrl(url,mode){
+  const id=driveFileId(url);
+  if(!id)return url||"";
+  switch(mode){
+    case "preview":  return "https://drive.google.com/file/d/"+id+"/preview";
+    case "image":    return "https://drive.google.com/thumbnail?id="+id+"&sz=w2000";
+    case "download": return "https://drive.google.com/uc?export=download&id="+id;
+    case "view":
+    default:         return "https://drive.google.com/file/d/"+id+"/view";
+  }
+}
 function fd(s){return new Date(s+"T00:00:00").toLocaleDateString(_lang==="es"?"es":"en-US",{year:"numeric",month:"long",day:"numeric"})}
 // Translate "Month YYYY" strings like "March 2026" to locale
 const _moEN=["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -605,7 +891,7 @@ function navigate(id){currentPage=id;history.pushState(null,"","#"+id);document.
 function toggleSidebar(){document.getElementById("sidebarOverlay").classList.add("open")}
 function closeSidebar(){document.getElementById("sidebarOverlay").classList.remove("open")}
 const NAV_ES={home:"Inicio",meeting:"Reunión",events:"Eventos",subscribe:"Suscribirse",contribute:"Contribuir",about:"Acerca de GV/LV",gvr:"Rincón del GVR / RLV",documents:"Documentos",photos:"Galería de Eventos",media:"Escuchar y Ver",resources:"Recursos"};
-function renderNav(){document.getElementById("mNav").innerHTML=NAV_SECTIONS.map(s=>{const lbl=_lang==="es"?(NAV_ES[s.id]||s.label):s.label;return `<li><a href="#${s.id}" data-nav="${s.id}" onclick="navigate('${s.id}');return false;" class="sidebar-nav-item flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-slate-700 font-medium text-[.95rem] no-underline transition-all hover:text-brand-600 hover:bg-brand-50 mb-0.5"><i class="bi ${s.icon} w-5 text-center"></i> ${lbl}</a></li>`}).join("");updateSidebarActive()}
+function renderNav(){document.getElementById("mNav").innerHTML=NAV_SECTIONS.map(s=>{const lbl=_lang==="es"?(NAV_ES[s.id]||s.label):s.label;return `<li><a href="#${s.id}" data-nav="${s.id}" onclick="navigate('${s.id}');return false;" class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-slate-700 font-medium text-[.95rem] no-underline transition-all hover:text-brand-600 hover:bg-brand-50 mb-0.5 min-h-[44px]"><i class="bi ${s.icon} w-5 text-center text-base"></i> ${lbl}</a></li>`}).join("");updateSidebarActive()}
 function updateSidebarActive(){document.querySelectorAll(".sidebar-nav-item").forEach(a=>a.classList.toggle("active",a.dataset.nav===currentPage))}
 function handleHash(){const h=(location.hash||"#home").slice(1);const valid=NAV_SECTIONS.find(s=>s.id===h);const id=valid?h:"home";currentPage=id;document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));const pg=document.getElementById("pg-"+id);if(pg)pg.classList.add("active");document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("active",a.dataset.nav===id));window.scrollTo({top:0,behavior:"instant"});closeSidebar();if(id!=="photos")stopGal();if(id!=="home")clearInterval(cdTimer);if(id==="photos")startGal();if(id==="home")startCountdown();setTimeout(()=>{updateHeader();updateSidebarActive()},10)}
 window.addEventListener("hashchange",handleHash);
@@ -631,17 +917,23 @@ function addToCal(date,title,location,desc){
   a.click();URL.revokeObjectURL(a.href);
 }
 
-// PDF Viewer — uses Google Docs Viewer for all PDFs
+// PDF Viewer — embeds the file in an iframe modal
+//   • Drive/Docs URLs use Drive's native /preview endpoint (works for PDFs,
+//     Docs, Sheets, and Slides without any extra service)
+//   • All other URLs are wrapped with Google Docs Viewer (gview), which can
+//     embed any publicly-accessible PDF file
 function showPdf(url,title){
   clearTimeout(_pdfCloseTimer);
   document.getElementById("pdfMT").textContent=title||t("Document","Documento");
-  document.getElementById("pdfMO").href=url;
-  document.getElementById("pdfMD").href=url;
+  // "Open" button → Drive viewer page (or original URL); "Download" → direct download endpoint
+  const isDrive=!!driveFileId(url);
+  document.getElementById("pdfMO").href=isDrive?driveUrl(url,"view"):url;
+  document.getElementById("pdfMD").href=isDrive?driveUrl(url,"download"):url;
   const body=document.getElementById("pdfMB");
   const loader=document.getElementById("pdfLoader");
   body.querySelectorAll("iframe").forEach(el=>el.remove());
   loader.style.display="flex";
-  const viewerUrl="https://docs.google.com/gview?url="+encodeURIComponent(url)+"&embedded=true";
+  const viewerUrl=isDrive?driveUrl(url,"preview"):("https://docs.google.com/gview?url="+encodeURIComponent(url)+"&embedded=true");
   const iframe=document.createElement("iframe");
   iframe.src=viewerUrl;
   iframe.title=title||t("Document","Documento");
@@ -663,7 +955,7 @@ function closePdf(){
 let si=0,galTimer=null;
 function gm(d){si=(si+d+BOOTH_PHOTOS.length)%BOOTH_PHOTOS.length;gu();clearInterval(galTimer);startGal()}
 function gg(i){si=i;gu();clearInterval(galTimer);startGal()}
-function gu(){document.getElementById("gt").style.transform=`translateX(-${si*100}%)`;document.querySelectorAll(".gal-dot").forEach((d,i)=>d.classList.toggle("active",i===si));document.querySelectorAll(".gal-dot").forEach((d,i)=>{d.classList.toggle("!bg-brand-600",i===si);d.classList.toggle("!w-6",i===si)});const gc=document.getElementById("gc");if(gc)gc.textContent=si+1}
+function gu(){document.getElementById("gt").style.transform=`translateX(-${si*100}%)`;document.querySelectorAll(".gal-dot-wrap").forEach((d,i)=>d.classList.toggle("active",i===si));const gc=document.getElementById("gc");if(gc)gc.textContent=si+1}
 function startGal(){clearInterval(galTimer);galTimer=setInterval(()=>{si=(si+1)%BOOTH_PHOTOS.length;gu()},5000)}
 function stopGal(){clearInterval(galTimer);galTimer=null}
 
@@ -688,29 +980,42 @@ function renderHome(){
   const upcoming=EVENTS.filter(e=>isF(e.date)).sort((a,b)=>a.date.localeCompare(b.date));
   const nextEv=upcoming[0];
   const homeVids=[...YOUTUBE_VIDEOS].sort(()=>Math.random()-.5).slice(0,2);
-  const homeEps=[...SPOTIFY_EPISODES].sort(()=>Math.random()-.5).slice(0,3);
-  // Quick Actions — time-sensitive, most-clicked items
-  const quickCards=[
-    {id:"meeting",icon:"bi-camera-video-fill",bg:"bg-sky-50 text-sky-600",title:t("Next Meeting","Próxima Reunión"),desc:fd(MEETING_INFO.nextMeetingDate)+"<br>"+MEETING_INFO.time,count:"Zoom: "+MEETING_INFO.meetingId},
-    {id:"events",icon:"bi-calendar-event-fill",bg:"bg-pink-50 text-pink-600",title:t("Events","Eventos"),desc:nextEv?(_lang==="es"&&nextEv.title_es?nextEv.title_es:nextEv.title)+" — "+fd(nextEv.date):t("No upcoming events","Sin eventos próximos"),count:upcoming.length+" "+t("upcoming","próximos")},
-    {id:"subscribe",icon:"bi-cart-fill",bg:"bg-green-50 text-green-600",title:t("Subscribe","Suscribirse"),desc:t("Print, digital, or both — support AA's self-supporting journal","Impresa, digital o ambas — apoya la revista autofinanciada de AA"),count:t("From $2.99/mo","Desde $2.99/mes")},
-    {id:"contribute",icon:"bi-pencil-square",bg:"bg-amber-50 text-amber-600",title:t("Contribute","Contribuir"),desc:t("Submit your story, art, or photos to Grapevine or La Viña","Envía tu historia, arte o fotos a Grapevine o La Viña"),count:t("Editorial calendar","Calendario editorial")},
-  ];
-  // Browse & Explore — informational, reference pages
-  const browseCards=[
-    {id:"about",icon:"bi-info-circle-fill",bg:"bg-blue-50 text-blue-600",title:t("About GV / La Viña","Acerca de GV / La Viña"),desc:t("Learn about AA's Meeting in Print, its history, and role in the service structure","Conoce la Reunión Impresa de AA, su historia y papel en la estructura de servicio"),count:t("Since 1944","Desde 1944")},
-    {id:"gvr",icon:"bi-person-badge-fill",bg:"bg-purple-50 text-purple-600",title:t("GVR Corner","Rincón del RLV"),desc:t("Resources, guides, and ideas for Grapevine &amp; La Viña Representatives","Recursos, guías e ideas para Representantes de Grapevine y La Viña"),count:t("Handbooks &amp; tools","Manuales y herramientas")},
-    {id:"documents",icon:"bi-folder-fill",bg:"bg-purple-50 text-purple-600",title:t("Documents","Documentos"),desc:t("Committee reports, meeting notes, and slides","Informes del comité, minutas y presentaciones"),count:REPORTS.length+" "+t("reports","informes")+" &middot; "+MEETING_NOTES.length+" "+t("notes","minutas")},
-    {id:"photos",icon:"bi-images",bg:"bg-pink-50 text-pink-600",title:t("Event Gallery","Galería de Eventos"),desc:t("Photos from our booths, workshops, and assemblies","Fotos de nuestras mesas, talleres y asambleas"),count:BOOTH_PHOTOS.length+" "+t("photos","fotos")},
-    {id:"media",icon:"bi-play-circle-fill",bg:"bg-green-50 text-green-600",title:t("Listen &amp; Watch","Escuchar y Ver"),desc:t("Podcast, YouTube, and Instagram (@alcoholicsanonymous_gv &amp; @alcoholicosanonimos_lv)","Podcast, YouTube e Instagram (@alcoholicsanonymous_gv y @alcoholicosanonimos_lv)"),count:t("New episodes weekly","Episodios nuevos cada semana")},
-    {id:"resources",icon:"bi-link-45deg",bg:"bg-sky-50 text-sky-600",title:t("Resources","Recursos"),desc:t("Apps, books, sobriety calculator, and more","Aplicaciones, libros, calculadora de sobriedad y más"),count:RESOURCES.length+" "+t("links","enlaces")},
-  ];
+  const homeEps=[...PODCAST_EPISODES].sort(()=>Math.random()-.5).slice(0,3);
+  // Build runtime variable bags for HOME_QUICK_CARDS / HOME_BROWSE_CARDS placeholders
+  const nextEvLine=nextEv?(tx(nextEv,"title")+" — "+fd(nextEv.date)):t("No upcoming events","Sin eventos próximos");
+  const quickVars={
+    meeting:    { date:fd(MEETING_INFO.nextMeetingDate), time:MEETING_INFO.time, meetingId:MEETING_INFO.meetingId },
+    events:     { nextLine:nextEvLine, n:upcoming.length },
+    subscribe:  {},
+    contribute: {},
+  };
+  const browseVars={
+    about:     {},
+    gvr:       {},
+    documents: { r:REPORTS.length, n:MEETING_NOTES.length },
+    photos:    { p:BOOTH_PHOTOS.length },
+    media:     {},
+    resources: { n:RESOURCES.length },
+  };
+  // Render a card from a HOME_*_CARDS entry — tx() handles En/Es selection,
+  // fmt() substitutes runtime placeholders like {date}, {n}, etc.
+  function homeCard(c,vars){
+    return `<a href="#${c.id}" onclick="navigate('${c.id}');return false;" class="dash-card bg-white border border-slate-200 rounded-xl p-5 no-underline text-inherit flex flex-col card-lift hover:border-brand-100 group">
+      <div class="dash-card-icon w-11 h-11 rounded-lg flex items-center justify-center text-xl mb-3 ${c.bg}"><i class="bi ${c.icon}"></i></div>
+      <h3 class="text-[.95rem] font-bold text-slate-900 mb-1">${tx(c,"title")}</h3>
+      <p class="text-[.82rem] text-slate-500 leading-relaxed flex-1">${fmt(tx(c,"desc"),vars)}</p>
+      ${c.count?`<div class="text-[.7rem] font-semibold text-brand-600 mt-3 flex items-center gap-1"><i class="bi bi-arrow-right-short"></i> ${fmt(tx(c,"count"),vars)}</div>`:""}
+    </a>`;
+  }
+  // Home hero is structurally different from other pages (countdown + CTAs)
+  // so we can't use heroHtml() — but we still pull the title/sub from PAGE_HEROES
+  const hh=PAGE_HEROES.home;
   let h=`<div class="bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 text-white pt-20 md:pt-24 pb-14 md:pb-16 relative overflow-hidden hero-mesh" id="homeHero">
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
       <div class="grid md:grid-cols-2 gap-6 md:gap-10 items-center">
         <div class="text-center md:text-left">
-          <h1 class="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1]">${t("Grapevine &amp;<br>La Viña Committee","Comité de<br>Grapevine y La Viña")}</h1>
-          <p class="opacity-60 text-sm md:text-base mt-3 max-w-lg md:max-w-none">${t("AA's Meeting in Print — Our Story in Every Language","La Reunión Impresa de AA — Nuestra Historia en Cada Idioma")}</p>
+          <h1 class="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1]">${tx(hh,"title")}</h1>
+          <p class="opacity-60 text-sm md:text-base mt-3 max-w-lg md:max-w-none">${tx(hh,"sub")}</p>
         </div>
         <div class="text-center md:text-right">
           <div class="flex flex-wrap gap-3 mb-4 justify-center md:justify-end">
@@ -721,21 +1026,17 @@ function renderHome(){
         </div>
       </div>
     </div></div>`;
-  function cardHtml(c){return `<a href="#${c.id}" onclick="navigate('${c.id}');return false;" class="dash-card bg-white border border-slate-200 rounded-xl p-5 no-underline text-inherit flex flex-col card-lift hover:border-brand-100 group">
-    <div class="dash-card-icon w-11 h-11 rounded-lg flex items-center justify-center text-xl mb-3 ${c.bg}"><i class="bi ${c.icon}"></i></div>
-    <h3 class="text-[.95rem] font-bold text-slate-900 mb-1">${c.title}</h3><p class="text-[.82rem] text-slate-500 leading-relaxed flex-1">${c.desc}</p>
-    ${c.count?`<div class="text-[.7rem] font-semibold text-brand-600 mt-3 flex items-center gap-1"><i class="bi bi-arrow-right-short"></i> ${c.count}</div>`:""}</a>`}
   h+=`<div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">`;
   h+=`<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 -mt-8 relative z-20 stagger">`;
-  quickCards.forEach(c=>{h+=cardHtml(c)});
+  HOME_QUICK_CARDS.forEach(c=>{h+=homeCard(c,quickVars[c.id]||{})});
   h+=`</div>`;
   h+=`<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mt-4 stagger">`;
-  browseCards.forEach(c=>{h+=cardHtml(c)});
+  HOME_BROWSE_CARDS.forEach(c=>{h+=homeCard(c,browseVars[c.id]||{})});
   h+=`</div>`;
   if(RECENT_ANN.length>0){h+=`<div class="mt-10 home-ann-wrap"><div class="flex items-center gap-3 mb-5"><div class="w-10 h-10 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center text-lg shrink-0"><i class="bi bi-megaphone"></i></div><h2 class="text-xl font-bold text-slate-900">${t("Recent Announcements","Anuncios Recientes")}</h2></div>`;RECENT_ANN.slice(0,3).forEach(a=>{h+=annCard(a)});if(RECENT_ANN.length>3)h+=`<p class="text-center mt-3"><a href="#" onclick="showAllAnn();return false;" class="text-slate-500 text-sm hover:text-brand-600 transition-colors">${t("View all "+RECENT_ANN.length+" announcements","Ver los "+RECENT_ANN.length+" anuncios")}</a></p>`;h+=`</div>`}
   h+=`<div class="mt-10"><div class="flex items-center gap-3 mb-5"><div class="w-10 h-10 bg-pink-50 text-pink-600 rounded-lg flex items-center justify-center text-lg shrink-0"><i class="bi bi-play-circle"></i></div><div><h2 class="text-xl font-bold text-slate-900">${t("Listen &amp; Watch","Escuchar y Ver")}</h2><p class="text-sm text-slate-500">${t("Fresh picks from the AA Grapevine podcast and YouTube — refreshes each visit","Selecciones del podcast y YouTube de AA Grapevine — se actualizan en cada visita")}</p></div></div>
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">`;
-  homeEps.forEach(ep=>{h+=`<div class="bg-white border border-slate-200 rounded-xl overflow-hidden card-lift hover:border-brand-100"><iframe src="https://open.spotify.com/embed/episode/${ep.id}?utm_source=generator&theme=0" height="152" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen loading="lazy" title="${ep.title}" class="w-full border-none"></iframe></div>`});
+  homeEps.forEach(ep=>{h+=`<div class="bg-white border border-slate-200 rounded-xl overflow-hidden card-lift hover:border-brand-100"><iframe src="https://embed.podcasts.apple.com/us/podcast/${APPLE_SHOW_SLUG}/id${APPLE_SHOW_ID}?i=${ep.id}&theme=light" height="175" allow="autoplay *; encrypted-media *; clipboard-write" allowtransparency="true" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" loading="lazy" title="${ep.title}" class="w-full border-none"></iframe></div>`});
   h+=`</div><div class="grid md:grid-cols-2 gap-4">`;
   homeVids.forEach(v=>{h+=vidCard(v)});
   h+=`</div>
@@ -746,10 +1047,7 @@ function renderHome(){
 // ===== ABOUT PAGE =====
 function renderAbout(){
   document.getElementById("pg-about").innerHTML=`
-    <div class="bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 text-white pt-20 md:pt-24 pb-10 md:pb-14 relative overflow-hidden hero-mesh"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
-      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight"><i class="bi bi-info-circle-fill"></i> ${t("About Grapevine &amp; La Viña","Acerca de Grapevine y La Viña")}</h1>
-      <p class="opacity-80 text-sm mt-1">${t("AA's Meeting in Print — 80+ years of history, "+TIMELINE.length+" milestones","La Reunión Impresa de AA — Más de 80 años de historia, "+TIMELINE.length+" hitos")}</p>
-    </div></div>
+    ${heroHtml("about",{milestones:TIMELINE.length})}
     <div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
       <div class="bg-gradient-to-br from-brand-600 to-brand-500 text-white rounded-2xl p-6 md:p-8 relative overflow-hidden mb-6">
         <div class="absolute top-[-10px] left-4 text-[6rem] opacity-15 font-serif leading-none">&ldquo;</div>
@@ -853,10 +1151,7 @@ function renderTimeline(){
 // ===== GVR CORNER PAGE =====
 function renderGVR(){
   document.getElementById("pg-gvr").innerHTML=`
-    <div class="bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 text-white pt-20 md:pt-24 pb-10 md:pb-14 relative overflow-hidden hero-mesh"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
-      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight"><i class="bi bi-person-badge-fill"></i> ${t("GVR / RLV Corner","Rincón del GVR / RLV")}</h1>
-      <p class="opacity-80 text-sm mt-1">${t("Everything Grapevine &amp; La Viña Representatives need","Todo lo que necesitan los Representantes de Grapevine y La Viña")}</p>
-    </div></div>
+    ${heroHtml("gvr")}
     <div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10"><div class="grid lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 space-y-4">
         <div class="bg-white border border-slate-200 rounded-xl p-6 card-lift hover:border-brand-100">
@@ -1056,92 +1351,77 @@ function renderGVR(){
 
 // ===== SUBSCRIBE PAGE =====
 function renderSubscribe(){
+  // Renders one pricing card from a SUBSCRIPTION_TIERS entry.
+  // theme: "brand" (default), "amber", "brand-highlight", "amber-highlight"
+  function tierCard(tier){
+    const isHighlight=tier.theme==="brand-highlight"||tier.theme==="amber-highlight";
+    const isAmber=tier.theme==="amber"||tier.theme==="amber-highlight";
+    const borderCls=isHighlight?(isAmber?"border-amber-500":"border-brand-600"):"border-slate-200";
+    const priceCls=isAmber?"text-amber-600":"text-brand-600";
+    const checkCls=isAmber?"text-amber-600":"text-brand-600";
+    const ctaCls=isAmber?"bg-amber-500 hover:bg-amber-600":"bg-brand-600 hover:bg-brand-700";
+    const badgeCls=isAmber?"bg-amber-500 animate-pulse2":"bg-brand-600";
+    const badge=tx(tier,"badge");
+    const badgeHtml=badge?`<div class="absolute -top-px right-5 ${badgeCls} text-white text-[.65rem] font-bold px-3 py-1 rounded-b-lg uppercase tracking-wider">${badge}</div>`:"";
+    let featuresHtml="";
+    tier.features.forEach((f,i)=>{
+      const last=i===tier.features.length-1;
+      const iconHtml=f.ok?`<i class="bi bi-check-circle-fill ${checkCls} text-xs"></i>`:`<i class="bi bi-x-circle text-slate-300 text-xs"></i>`;
+      featuresHtml+=`<li class="flex items-center gap-2 ${last?"":"pb-2 border-b border-slate-100"}">${iconHtml} ${tx(f,"text")}</li>`;
+    });
+    // NOTE: Full class strings (including hover: prefix) must appear as
+    // literals in source so Tailwind's content scanner can detect them.
+    const hoverCls=isAmber?"hover:border-amber-400":"hover:border-brand-400";
+    return `<div class="bg-white border-2 ${borderCls} rounded-2xl p-6 text-center relative card-lift ${hoverCls}">
+      ${badgeHtml}
+      <h5 class="font-bold text-slate-900">${tx(tier,"name")}</h5>
+      <div class="text-3xl font-extrabold ${priceCls} mt-3 mb-1">${tier.price}</div>
+      <div class="text-xs text-slate-500">${tx(tier,"period")}</div>
+      <ul class="text-left text-sm text-slate-600 mt-4 space-y-2 list-none pl-0">${featuresHtml}</ul>
+      <a href="${tier.ctaUrl}" target="_blank" rel="noopener" class="block mt-4 px-4 py-2.5 ${ctaCls} text-white rounded-lg text-sm font-medium transition-colors no-underline">${tx(tier,"ctaLabel")}</a>
+    </div>`;
+  }
+  // Renders the section header (icon + name + tagline) above each tier group
+  function sectionHeader(s){
+    return `<div class="flex items-center gap-3 mb-5"><div class="w-10 h-10 ${s.iconBg} rounded-lg flex items-center justify-center text-lg shrink-0"><i class="bi ${s.icon}"></i></div><div><h2 class="text-xl font-bold text-slate-900">${tx(s,"name")}</h2><p class="text-sm text-slate-500">${tx(s,"tagline")}</p></div></div>`;
+  }
+  // Renders the gift-subscription card from SUBSCRIPTION_GIFT
+  function giftCard(g){
+    let bullets="";g.bullets.forEach(b=>{bullets+=`<li>${tx(b,"text")}</li>`});
+    return `<div class="bg-white border border-slate-200 rounded-xl p-6 flex flex-col justify-center card-lift hover:border-brand-100">
+      <h4 class="font-bold text-slate-900 mb-2"><i class="bi ${g.icon}"></i> ${tx(g,"title")}</h4>
+      <p class="text-sm text-slate-600 mb-2">${tx(g,"body")}</p>
+      <ul class="pl-5 text-sm text-slate-600 space-y-1 mb-3">${bullets}</ul>
+      <a href="${g.ctaUrl}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors no-underline self-start"><i class="bi ${g.ctaIcon}"></i> ${tx(g,"ctaLabel")}</a>
+    </div>`;
+  }
+  // Group tiers by section so we can render GV first, then LV (with gift card appended)
+  const gvTiers=SUBSCRIPTION_TIERS.filter(tier=>tier.section==="gv");
+  const lvTiers=SUBSCRIPTION_TIERS.filter(tier=>tier.section==="lv");
+  // Support contact lines
+  let contactLines="";
+  SUPPORT_CONTACT.lines.forEach(l=>{contactLines+=`<span><strong>${tx(l,"label")}</strong> ${l.value}</span>`});
+  // Catalog buttons — pulled from RESOURCES so we don't duplicate URLs
+  const gvCatalog=RESOURCES.find(r=>r.title==="GV Catalog (PDF)");
+  const lvCatalog=RESOURCES.find(r=>r.title==="La Viña Catalog (PDF)");
+  const catalogBtns=[gvCatalog,lvCatalog].filter(Boolean).map(r=>`<a href="${r.url}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium border border-slate-200 transition-colors no-underline"><i class="bi ${r.icon}"></i> ${tx(r,"title")}</a>`).join("");
   document.getElementById("pg-subscribe").innerHTML=`
-    <div class="bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 text-white pt-20 md:pt-24 pb-10 md:pb-14 relative overflow-hidden hero-mesh"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
-      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight"><i class="bi bi-cart-fill"></i> ${t("Subscribe","Suscribirse")}</h1>
-      <p class="opacity-80 text-sm mt-1">${t("Support AA Grapevine &amp; La Viña — entirely self-supporting through subscriptions","Apoya a AA Grapevine y La Viña — completamente autofinanciados mediante suscripciones")}</p>
-    </div></div>
+    ${heroHtml("subscribe")}
     <div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
-      <div class="flex items-center gap-3 mb-5"><div class="w-10 h-10 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center text-lg shrink-0"><i class="bi bi-journal-richtext"></i></div><div><h2 class="text-xl font-bold text-slate-900">AA Grapevine</h2><p class="text-sm text-slate-500">${t("Monthly magazine — print, digital, or both","Revista mensual — impresa, digital o ambas")}</p></div></div>
+      ${sectionHeader(SUBSCRIPTION_SECTIONS.gv)}
       <div class="grid md:grid-cols-3 gap-5 mb-8 max-w-5xl mx-auto">
-        <div class="bg-white border-2 border-slate-200 rounded-2xl p-6 text-center card-lift hover:border-brand-400">
-          <h5 class="font-bold text-slate-900">${t("Print Only","Solo Impresa")}</h5>
-          <div class="text-3xl font-extrabold text-brand-600 mt-3 mb-1">$36</div><div class="text-xs text-slate-500">${t("per year (12 issues)","por año (12 ediciones)")}</div>
-          <ul class="text-left text-sm text-slate-600 mt-4 space-y-2 list-none pl-0">
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("12 monthly print issues mailed","12 ediciones impresas mensuales por correo")}</li>
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("Stories from AA members worldwide","Historias de miembros de AA en todo el mundo")}</li>
-            <li class="flex items-center gap-2"><i class="bi bi-x-circle text-slate-300 text-xs"></i> ${t("No digital/app access","Sin acceso digital/app")}</li>
-          </ul>
-          <a href="https://www.aagrapevine.org/store/us-subscriptions" target="_blank" rel="noopener" class="block mt-4 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors no-underline">${t("Subscribe","Suscribirse")}</a>
-        </div>
-        <div class="bg-white border-2 border-slate-200 rounded-2xl p-6 text-center card-lift hover:border-brand-400">
-          <h5 class="font-bold text-slate-900">${t("Digital Only","Solo Digital")}</h5>
-          <div class="text-3xl font-extrabold text-brand-600 mt-3 mb-1">$2.99</div><div class="text-xs text-slate-500">${t("per month, or $29.99/year","por mes, o $29.99/año")}</div>
-          <ul class="text-left text-sm text-slate-600 mt-4 space-y-2 list-none pl-0">
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("Full website &amp; app access","Acceso completo al sitio web y app")}</li>
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("Story archive (1944–present)","Archivo de historias (1944–presente)")}</li>
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("Audio Grapevine","Audio Grapevine")}</li>
-            <li class="flex items-center gap-2"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("Podcast access in-app","Acceso al podcast en la app")}</li>
-          </ul>
-          <a href="https://www.aagrapevine.org/store/us-subscriptions" target="_blank" rel="noopener" class="block mt-4 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors no-underline">${t("Subscribe","Suscribirse")}</a>
-        </div>
-        <div class="bg-white border-2 border-brand-600 rounded-2xl p-6 text-center relative card-lift hover:border-brand-400">
-          <div class="absolute -top-px right-5 bg-brand-600 text-white text-[.65rem] font-bold px-3 py-1 rounded-b-lg uppercase tracking-wider">${t("Best Value","Mejor Valor")}</div>
-          <h5 class="font-bold text-slate-900">${t("Complete (Print + Digital)","Completa (Impresa + Digital)")}</h5>
-          <div class="text-3xl font-extrabold text-brand-600 mt-3 mb-1">$69</div><div class="text-xs text-slate-500">${t("per year, or $7/month","por año, o $7/mes")}</div>
-          <ul class="text-left text-sm text-slate-600 mt-4 space-y-2 list-none pl-0">
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("12 monthly print issues","12 ediciones impresas mensuales")}</li>
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("Full digital &amp; app access","Acceso completo digital y app")}</li>
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("Complete story archive","Archivo completo de historias")}</li>
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("Audio Grapevine","Audio Grapevine")}</li>
-            <li class="flex items-center gap-2"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("Best value — print + digital","Mejor valor — impresa + digital")}</li>
-          </ul>
-          <a href="https://www.aagrapevine.org/store/us-subscriptions" target="_blank" rel="noopener" class="block mt-4 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors no-underline">${t("Subscribe","Suscribirse")}</a>
-        </div>
+        ${gvTiers.map(tierCard).join("")}
       </div>
-      <div class="flex items-center gap-3 mb-5"><div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-lg shrink-0"><i class="bi bi-translate"></i></div><div><h2 class="text-xl font-bold text-slate-900">La Viña</h2><p class="text-sm text-slate-500">${t("Bimonthly Spanish-language magazine","Revista bimestral en español")}</p></div></div>
+      ${sectionHeader(SUBSCRIPTION_SECTIONS.lv)}
       <div class="grid md:grid-cols-3 gap-5 mb-6 max-w-5xl mx-auto">
-        <div class="bg-white border-2 border-amber-500 rounded-2xl p-6 text-center relative card-lift hover:border-amber-400">
-          <div class="absolute -top-px right-5 bg-amber-500 text-white text-[.65rem] font-bold px-3 py-1 rounded-b-lg uppercase tracking-wider animate-pulse2">Promo</div>
-          <h5 class="font-bold text-slate-900">${t("La Viña Print","La Viña Impresa")}</h5>
-          <div class="text-3xl font-extrabold text-amber-600 mt-3 mb-1">$7.50</div><div class="text-xs text-slate-500">${t("6-month subscription (3 issues)","Suscripción de 6 meses (3 ediciones)")}</div>
-          <ul class="text-left text-sm text-slate-600 mt-4 space-y-2 list-none pl-0">
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-amber-600 text-xs"></i> ${t("3 bimonthly print issues mailed","3 ediciones bimestrales impresas por correo")}</li>
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-amber-600 text-xs"></i> ${t("Stories in Spanish from AA members","Historias en español de miembros de AA")}</li>
-            <li class="flex items-center gap-2"><i class="bi bi-check-circle-fill text-amber-600 text-xs"></i> ${t("Special promotional price","Precio promocional especial")}</li>
-          </ul>
-          <a href="https://www.aalavina.org/tienda/suscripcion-revista-impresa-la-vina-6-meses" target="_blank" rel="noopener" class="block mt-4 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition-colors no-underline">Suscribirse — $7.50</a>
-        </div>
-        <div class="bg-white border-2 border-slate-200 rounded-2xl p-6 text-center card-lift hover:border-brand-400">
-          <h5 class="font-bold text-slate-900">La Viña Digital</h5>
-          <div class="text-3xl font-extrabold text-brand-600 mt-3 mb-1">$2.99</div><div class="text-xs text-slate-500">${t("per month, or $29.99/year","por mes, o $29.99/año")}</div>
-          <ul class="text-left text-sm text-slate-600 mt-4 space-y-2 list-none pl-0">
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("Bimonthly magazine in Spanish","Revista bimestral en español")}</li>
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("Full La Viña archive","Archivo completo de La Viña")}</li>
-            <li class="flex items-center gap-2 pb-2 border-b border-slate-100"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("Audio of each article","Audio de cada artículo")}</li>
-            <li class="flex items-center gap-2"><i class="bi bi-check-circle-fill text-brand-600 text-xs"></i> ${t("Podcast in Spanish","Podcast en español")}</li>
-          </ul>
-          <a href="https://www.aalavina.org" target="_blank" rel="noopener" class="block mt-4 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors no-underline">Suscribirse</a>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl p-6 flex flex-col justify-center card-lift hover:border-brand-100">
-          <h4 class="font-bold text-slate-900 mb-2"><i class="bi bi-gift"></i> ${t("Gift Subscriptions &amp; Carry the Message","Suscripciones de Regalo y Lleva el Mensaje")}</h4>
-          <p class="text-sm text-slate-600 mb-2">${t("Give the gift of Grapevine or La Viña to a sponsee, newcomer, or someone who can't afford a subscription. Perfect for:","Regala una suscripción de Grapevine o La Viña a un ahijado, recién llegado o alguien que no puede pagarla. Perfecto para:")}</p>
-          <ul class="pl-5 text-sm text-slate-600 space-y-1 mb-3"><li>${t("Anniversary gifts","Regalos de aniversario")}</li><li>${t("Correctional &amp; treatment facilities","Instituciones correccionales y de tratamiento")}</li><li>${t("Doctor's offices &amp; waiting rooms","Consultorios médicos y salas de espera")}</li><li>${t("Newcomer welcome packages","Paquetes de bienvenida para recién llegados")}</li></ul>
-          <a href="https://www.aagrapevine.org/carry-the-message" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors no-underline self-start"><i class="bi bi-heart"></i> ${t("Carry the Message","Lleva el Mensaje")}</a>
-        </div>
+        ${lvTiers.map(tierCard).join("")}
+        ${giftCard(SUBSCRIPTION_GIFT)}
       </div>
       <div class="bg-white border border-slate-200 rounded-xl p-5 text-center card-lift max-w-3xl mx-auto">
-        <p class="text-slate-500 text-sm mb-2">${t("Need help with subscriptions?","¿Necesitas ayuda con suscripciones?")}</p>
-        <div class="flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm">
-          <span><strong>${t("USA:","EE.UU.:")}</strong> (800) 631-6025</span>
-          <span><strong>${t("International:","Internacional:")}</strong> +1 (570) 567-0437</span>
-          <span><strong>${t("En Español:","En Español:")}</strong> (800) 640-8781</span>
-        </div>
+        <p class="text-slate-500 text-sm mb-2">${tx(SUPPORT_CONTACT,"prompt")}</p>
+        <div class="flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm">${contactLines}</div>
       </div>
-      <div class="flex flex-wrap justify-center gap-3 mt-4">
-        <a href="https://www.aagrapevine.org/sites/default/files/2026-02/GV_Catalog_2026.pdf" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium border border-slate-200 transition-colors no-underline"><i class="bi bi-file-earmark-pdf"></i> ${t("GV Catalog (PDF)","Catálogo de GV (PDF)")}</a>
-        <a href="https://www.aagrapevine.org/sites/default/files/2026-02/LV_Catalog_2026.pdf" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium border border-slate-200 transition-colors no-underline"><i class="bi bi-file-earmark-pdf"></i> ${t("La Viña Catalog (PDF)","Catálogo de La Viña (PDF)")}</a>
-      </div>
+      <div class="flex flex-wrap justify-center gap-3 mt-4">${catalogBtns}</div>
     </div></div>`}
 
 // ===== CONTRIBUTE PAGE =====
@@ -1153,11 +1433,41 @@ function renderContribute(){
   futureDeadlines.forEach(e=>{const tMo=tMonth(e.issueMonth);const mo=tMo.split(' ')[0];const yr=tMo.split(' ')[1];const eTopic=_lang==="es"&&e.topic_es?e.topic_es:e.topic;const daysLeft=Math.ceil((new Date(e.deadline+"T23:59:59")-new Date())/864e5);const urgent=daysLeft<=30;deadlines+=`<div class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-4 mb-2 card-lift hover:border-brand-100"><div class="bg-brand-50 rounded-lg px-3 py-2 text-center shrink-0"><div class="text-sm font-bold text-brand-600">${mo}</div><div class="text-[.6rem] text-brand-600 font-medium">${yr}</div></div><div class="flex-1"><div class="font-semibold text-slate-900 text-sm">${eTopic}</div><div class="text-xs text-slate-500">${t("Deadline","Fecha límite")}: ${fd(e.deadline)}${urgent?' <span class="text-amber-600 font-semibold">('+(daysLeft<=0?t("Due now!","¡Vence ahora!"):daysLeft+" "+t("days left","días restantes"))+')</span>':''}</div></div></div>`});
   noDeadline.forEach(e=>{const tMo=tMonth(e.issueMonth);const mo=tMo.split(' ')[0];const yr=tMo.split(' ')[1];const eTopic=_lang==="es"&&e.topic_es?e.topic_es:e.topic;deadlines+=`<div class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-4 mb-2 opacity-70"><div class="bg-slate-100 rounded-lg px-3 py-2 text-center shrink-0"><div class="text-sm font-bold text-slate-500">${mo}</div><div class="text-[.6rem] text-slate-500 font-medium">${yr}</div></div><div class="flex-1"><div class="font-semibold text-slate-900 text-sm">${eTopic}</div><div class="text-xs text-slate-400">${t("Curated from archives — no submissions","Seleccionado del archivo — no se aceptan envíos")}</div></div></div>`});
   if(pastDeadlines.length)deadlines+=`<p class="text-xs text-slate-400 mt-2">${pastDeadlines.length} ${t("past deadline"+(pastDeadlines.length>1?"s":"")+" hidden","fecha"+(pastDeadlines.length>1?"s":"")+" límite pasada"+(pastDeadlines.length>1?"s":"")+" oculta"+(pastDeadlines.length>1?"s":""))}</p>`;
+  // Render the "What You Can Submit" cards from SUBMISSION_TYPES
+  function submissionTypeCard(s){
+    const note=tx(s,"note");
+    return `<div class="bg-white border border-slate-200 rounded-xl p-5 card-lift hover:border-brand-100">
+      <h4 class="font-bold text-slate-900 mb-2"><i class="bi ${s.icon}"></i> ${tx(s,"title")}</h4>
+      <p class="text-sm text-slate-600 ${note?"mb-1":""}">${tx(s,"body")}</p>
+      ${note?`<p class="text-xs text-slate-500">${note}</p>`:""}
+    </div>`;
+  }
+  // Render a submission-channel block (GV or LV) from SUBMIT_CHANNELS
+  function channelBlock(ch){
+    const isAmber=ch.theme==="amber";
+    const numCls=isAmber?"bg-amber-500":"bg-brand-600";
+    const linkCls=isAmber?"text-amber-600 hover:text-amber-700":"text-brand-600 hover:text-brand-700";
+    const headIconBg=isAmber?"bg-amber-50 text-amber-600":"bg-brand-50 text-brand-600";
+    const wrapCls=isAmber?"bg-white border-2 border-amber-200 rounded-xl p-5 card-lift hover:border-amber-300 space-y-3":"bg-white border border-slate-200 rounded-xl p-5 card-lift hover:border-brand-100 space-y-3";
+    let itemsHtml="";
+    ch.items.forEach(it=>{
+      const valueHtml=it.url?`<a href="${it.url}" target="_blank" rel="noopener" class="${linkCls}">${it.text}</a>`:it.text;
+      itemsHtml+=`<div class="flex items-start gap-3"><div class="w-8 h-8 ${numCls} text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">${it.num}</div><div><strong>${tx(it,"label")}</strong><br>${valueHtml}</div></div>`;
+    });
+    const intro=tx(ch,"intro");
+    const introHtml=intro?`<p class="text-sm text-slate-600">${intro}</p>`:"";
+    const extra=ch.extraCta;
+    const extraHtml=extra?`<a href="${extra.url}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition-colors no-underline mt-1"><i class="bi ${extra.icon}"></i> ${tx(extra,"label")}</a>`:"";
+    return `<div class="flex items-center gap-3 mt-6 mb-3"><div class="w-10 h-10 ${headIconBg} rounded-lg flex items-center justify-center text-lg shrink-0"><i class="bi ${ch.headingIcon}"></i></div><h2 class="text-xl font-bold text-slate-900">${tx(ch,"heading")}</h2></div>
+      <div class="${wrapCls}">
+        ${introHtml}
+        ${itemsHtml}
+        <p class="text-xs text-slate-500 mt-3"><i class="bi bi-info-circle"></i> ${tx(ch,"footer")}</p>
+        ${extraHtml}
+      </div>`;
+  }
   document.getElementById("pg-contribute").innerHTML=`
-    <div class="bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 text-white pt-20 md:pt-24 pb-10 md:pb-14 relative overflow-hidden hero-mesh"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
-      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight"><i class="bi bi-pencil-square"></i> ${t("Contribute to Grapevine &amp; La Viña","Contribuir a Grapevine y La Viña")}</h1>
-      <p class="opacity-80 text-sm mt-1">${t("Share your experience, strength, and hope with AA members worldwide","Comparte tu experiencia, fortaleza y esperanza con miembros de AA en todo el mundo")}</p>
-    </div></div>
+    ${heroHtml("contribute")}
     <div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
       <div class="bg-gradient-to-br from-brand-600 to-brand-500 text-white rounded-2xl p-6 md:p-8 relative overflow-hidden mb-6">
         <div class="absolute top-[-10px] left-4 text-[6rem] opacity-15 font-serif leading-none">&ldquo;</div>
@@ -1167,35 +1477,9 @@ function renderContribute(){
       <div class="grid lg:grid-cols-5 gap-6">
         <div class="lg:col-span-3 space-y-4">
           <div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center text-lg shrink-0"><i class="bi bi-pencil"></i></div><h2 class="text-xl font-bold text-slate-900">${t("What You Can Submit","Qué Puedes Enviar")}</h2></div>
-          <div class="bg-white border border-slate-200 rounded-xl p-5 card-lift hover:border-brand-100">
-            <h4 class="font-bold text-slate-900 mb-2"><i class="bi bi-journal-text"></i> ${t("Stories","Historias")}</h4>
-            <p class="text-sm text-slate-600 mb-1">${t('Most articles are first-person accounts. <strong>Standing departments</strong> accept stories year-round:','La mayoría de los artículos son relatos en primera persona. Las <strong>secciones permanentes</strong> aceptan historias todo el año:')}</p>
-            <p class="text-xs text-slate-500">${t("Emotional Sobriety, Sponsorship, Newcomers, Youth Enjoying Sobriety, Old-Timers, Home Group, Steps &amp; Traditions","Sobriedad Emocional, Padrinazgo, Recién Llegados, Jóvenes en Sobriedad, Veteranos, Grupo Base, Pasos y Tradiciones")}</p>
-          </div>
-          <div class="bg-white border border-slate-200 rounded-xl p-5 card-lift hover:border-brand-100">
-            <h4 class="font-bold text-slate-900 mb-2"><i class="bi bi-palette"></i> ${t("Art, Cartoons &amp; Photos","Arte, Caricaturas y Fotos")}</h4>
-            <p class="text-sm text-slate-600">${t('Original cartoons, high-resolution photos (300 dpi JPEG) of AA meetings for "If Walls Could Talk," and artwork.','Caricaturas originales, fotos de alta resolución (300 dpi JPEG) de reuniones de AA para "If Walls Could Talk", y obras de arte.')}</p>
-          </div>
-          <div class="bg-white border border-slate-200 rounded-xl p-5 card-lift hover:border-brand-100">
-            <h4 class="font-bold text-slate-900 mb-2"><i class="bi bi-emoji-laughing"></i> ${t("Humor","Humor")}</h4>
-            <p class="text-sm text-slate-600">${t("Jokes and funny stories for the humor section — laughter is part of recovery!","Chistes e historias divertidas para la sección de humor — ¡la risa es parte de la recuperación!")}</p>
-          </div>
-          <div class="flex items-center gap-3 mt-6 mb-3"><div class="w-10 h-10 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center text-lg shrink-0"><i class="bi bi-send"></i></div><h2 class="text-xl font-bold text-slate-900">${t("How to Submit","Cómo Enviar")}</h2></div>
-          <div class="bg-white border border-slate-200 rounded-xl p-5 card-lift hover:border-brand-100 space-y-3">
-            <div class="flex items-start gap-3"><div class="w-8 h-8 bg-brand-600 text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">1</div><div><strong>${t("Online (easiest)","En línea (lo más fácil)")}</strong><br><a href="https://www.aagrapevine.org/share" target="_blank" rel="noopener" class="text-brand-600 hover:text-brand-700">aagrapevine.org/share</a></div></div>
-            <div class="flex items-start gap-3"><div class="w-8 h-8 bg-brand-600 text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">2</div><div><strong>${t("Email","Correo electrónico")}</strong><br><a href="mailto:editorial@aagrapevine.org" class="text-brand-600 hover:text-brand-700">editorial@aagrapevine.org</a></div></div>
-            <div class="flex items-start gap-3"><div class="w-8 h-8 bg-brand-600 text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">3</div><div><strong>${t("Mail","Correo postal")}</strong><br>Grapevine Editorial, 475 Riverside Drive, New York, NY 10115</div></div>
-            <p class="text-xs text-slate-500 mt-3"><i class="bi bi-info-circle"></i> ${t("Include your full name, address, phone, and email. Keep a copy — manuscripts cannot be returned. Stories are needed <strong>5 months before</strong> publication.","Incluye tu nombre completo, dirección, teléfono y correo electrónico. Guarda una copia — los manuscritos no se devuelven. Las historias se necesitan <strong>5 meses antes</strong> de la publicación.")}</p>
-          </div>
-          <div class="flex items-center gap-3 mt-6 mb-3"><div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-lg shrink-0"><i class="bi bi-translate"></i></div><h2 class="text-xl font-bold text-slate-900">${t("Contribute to La Viña (Spanish)","Contribuir a La Viña (Español)")}</h2></div>
-          <div class="bg-white border-2 border-amber-200 rounded-xl p-5 card-lift hover:border-amber-300 space-y-3">
-            <p class="text-sm text-slate-600">${t("La Viña accepts stories, art, and photos from AA members in Spanish. Share your experience, strength, and hope with the Spanish-speaking community.","La Viña acepta historias, arte y fotos de miembros de AA en español. Comparta su experiencia, fortaleza y esperanza con la comunidad hispanohablante.")}</p>
-            <div class="flex items-start gap-3"><div class="w-8 h-8 bg-amber-500 text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">1</div><div><strong>${t("Online","En línea")}</strong><br><a href="https://www.aalavina.org/comparte-tu-historia" target="_blank" rel="noopener" class="text-amber-600 hover:text-amber-700">aalavina.org/comparte-tu-historia</a></div></div>
-            <div class="flex items-start gap-3"><div class="w-8 h-8 bg-amber-500 text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">2</div><div><strong>${t("Email","Correo electrónico")}</strong><br><a href="mailto:lavina@aagrapevine.org" class="text-amber-600 hover:text-amber-700">lavina@aagrapevine.org</a></div></div>
-            <div class="flex items-start gap-3"><div class="w-8 h-8 bg-amber-500 text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">3</div><div><strong>${t("Mail","Correo postal")}</strong><br>La Viña Editorial, 475 Riverside Drive, New York, NY 10115</div></div>
-            <p class="text-xs text-slate-500 mt-3"><i class="bi bi-info-circle"></i> ${t("Include your full name, address, phone, and email. Stories are needed <strong>5 months before</strong> publication.","Incluya su nombre completo, dirección, teléfono y correo electrónico. Las historias se necesitan <strong>5 meses antes</strong> de la publicación.")}</p>
-            <a href="https://www.aalavina.org/sites/default/files/2020-08/Pautas%20para%20Colaborar%20con%20La%20Vin%CC%83a.pdf" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition-colors no-underline mt-1"><i class="bi bi-file-earmark-pdf"></i> Pautas para Colaborar (PDF)</a>
-          </div>
+          ${SUBMISSION_TYPES.map(submissionTypeCard).join("")}
+          ${channelBlock(SUBMIT_CHANNELS.gv)}
+          ${channelBlock(SUBMIT_CHANNELS.lv)}
         </div>
         <div class="lg:col-span-2">
           <div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-lg shrink-0"><i class="bi bi-calendar-range"></i></div><div><h2 class="text-xl font-bold text-slate-900">${t("Editorial Calendar","Calendario Editorial")}</h2><p class="text-sm text-slate-500">${t("Upcoming topics &amp; deadlines","Próximos temas y fechas límite")}</p></div></div>
@@ -1215,10 +1499,7 @@ function renderContribute(){
 function renderMeeting(){
   const m=MEETING_INFO;
   document.getElementById("pg-meeting").innerHTML=`
-    <div class="bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 text-white pt-20 md:pt-24 pb-10 md:pb-14 relative overflow-hidden hero-mesh"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
-      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight"><i class="bi bi-camera-video-fill"></i> ${t("Meeting Details","Detalles de la Reunión")}</h1>
-      <p class="opacity-80 text-sm mt-1">${t("Monthly committee meeting schedule and Zoom info","Horario de la reunión mensual del comité e información de Zoom")}</p>
-    </div></div>
+    ${heroHtml("meeting")}
     <div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10"><div class="max-w-5xl mx-auto"><div class="grid md:grid-cols-2 gap-5">
       <div class="bg-white border border-slate-200 rounded-xl p-6 card-lift hover:border-brand-100">
         <h5 class="font-bold text-slate-900 flex items-center gap-2 mb-4"><i class="bi bi-clock-fill text-brand-600"></i> ${t("Schedule","Horario")}</h5>
@@ -1242,9 +1523,7 @@ function renderEvents(){
   const pa=EVENTS.filter(e=>!isF(e.date)).sort((a,b)=>b.date.localeCompare(a.date));
   function esc(s){return s.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}
   function evc(e){const eTitle=_lang==="es"&&e.title_es?e.title_es:e.title;const eDesc=_lang==="es"&&e.description_es?e.description_es:e.description;const fl=e.flyerFile?`<a href="${fp("flyers",e.flyerFile)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 bg-red-50 text-red-700 text-[.72rem] font-semibold px-2 py-0.5 rounded-full hover:bg-red-100 transition-colors no-underline" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-pdf-fill"></i> ${t("Flyer","Volante")}</a>`:"";return `<div class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-4 mb-2 card-lift hover:border-brand-100 cursor-pointer ev-card" data-evdate="${e.date}" data-evtitle="${esc(e.title)}" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"><div class="bg-gradient-to-br from-brand-600 to-brand-500 text-white rounded-lg px-3 py-2 text-center min-w-[52px] shrink-0"><div class="text-[.58rem] uppercase tracking-wider font-semibold">${sm(e.date)}</div><div class="text-xl font-extrabold leading-none">${dn(e.date)}</div></div><div class="flex-1 min-w-0"><div class="font-semibold text-slate-900">${eTitle}</div><div class="text-xs text-slate-500 flex flex-wrap gap-2 mt-1"><span><i class="bi bi-geo-alt-fill"></i> ${e.location}</span><span><i class="bi bi-calendar3"></i> ${fd(e.date)}</span></div><p class="text-sm text-slate-700 mt-1">${eDesc}</p><div class="flex flex-wrap items-center gap-2 mt-2">${fl}<button type="button" class="ev-share inline-flex items-center gap-1 text-[.72rem] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 hover:bg-brand-50 hover:text-brand-600 transition-colors border-none cursor-pointer" data-evdate="${e.date}" data-evtitle="${esc(e.title)}" data-evloc="${esc(e.location)}" data-evdesc="${esc(eDesc)}"><i class="bi bi-share"></i> ${t("Share","Compartir")}</button></div></div></div>`}
-  let h=`<div class="bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 text-white pt-20 md:pt-24 pb-10 md:pb-14 relative overflow-hidden hero-mesh"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
-    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight"><i class="bi bi-calendar-event-fill"></i> ${t("Events","Eventos")}</h1><p class="opacity-80 text-sm mt-1">${up.length} ${t("upcoming","próximos")} &middot; ${pa.length} ${t("past","pasados")}</p>
-  </div></div><div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10"><div class="max-w-4xl mx-auto">
+  let h=`${heroHtml("events",{up:up.length,pa:pa.length})}<div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10"><div class="max-w-4xl mx-auto">
     <div class="flex flex-wrap gap-1 bg-slate-100 rounded-lg p-1 mb-5 w-fit"><button type="button" class="tab-btn active !bg-white !text-brand-600 !shadow-sm !font-semibold px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 border-none bg-transparent cursor-pointer transition-all" onclick="sTab('ev','up',this)">${t("Upcoming","Próximos")} (${up.length})</button><button type="button" class="tab-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 border-none bg-transparent cursor-pointer transition-all hover:text-slate-900" onclick="sTab('ev','pa',this)">${t("Past","Pasados")} (${pa.length})</button></div>
     <div class="tpanel active" id="ev-up">`;
   if(!up.length)h+='<p class="text-slate-500 text-sm">'+t("No upcoming events.","No hay eventos próximos.")+'</p>';else up.forEach(e=>{h+=evc(e)});
@@ -1254,9 +1533,7 @@ function renderEvents(){
 
 // ===== DOCUMENTS PAGE =====
 function renderDocuments(){
-  let h=`<div class="bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 text-white pt-20 md:pt-24 pb-10 md:pb-14 relative overflow-hidden hero-mesh"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
-    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight"><i class="bi bi-folder-fill"></i> ${t("Documents","Documentos")}</h1><p class="opacity-80 text-sm mt-1">${t("Reports, meeting notes, and presentation slides","Informes, minutas y presentaciones")}</p>
-  </div></div><div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10"><div class="max-w-4xl mx-auto">`;
+  let h=`${heroHtml("documents")}<div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10"><div class="max-w-4xl mx-auto">`;
   const hasDriveDocs=GOOGLE_DRIVE.reports||GOOGLE_DRIVE.notes||GOOGLE_DRIVE.slides;
   if(hasDriveDocs){h+=`<div class="flex flex-wrap gap-2 mb-5">`;if(GOOGLE_DRIVE.reports)h+=`<a href="${GOOGLE_DRIVE.reports}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium border border-blue-200 transition-colors no-underline"><i class="bi bi-google"></i> ${t("Reports on Drive","Informes en Drive")}</a>`;if(GOOGLE_DRIVE.notes)h+=`<a href="${GOOGLE_DRIVE.notes}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium border border-blue-200 transition-colors no-underline"><i class="bi bi-google"></i> ${t("Notes on Drive","Minutas en Drive")}</a>`;if(GOOGLE_DRIVE.slides)h+=`<a href="${GOOGLE_DRIVE.slides}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium border border-blue-200 transition-colors no-underline"><i class="bi bi-google"></i> ${t("Slides on Drive","Diapositivas en Drive")}</a>`;h+=`</div>`}
   if(MEETING_NOTES.length>0){const l=MEETING_NOTES[0];h+=`<div class="bg-gradient-to-br from-brand-600 to-brand-500 text-white rounded-2xl p-6 mb-5 relative overflow-hidden"><div class="absolute top-[-30%] right-[-10%] w-56 h-56 bg-white/[.08] rounded-full"></div><div class="relative"><div class="flex justify-between items-start flex-wrap gap-2"><div><div class="text-[.68rem] uppercase tracking-widest opacity-70 mb-1">${t("Latest Meeting Notes","Últimas Minutas de Reunión")}</div><h5 class="font-bold text-lg">${tMonth(l.month)}</h5></div><span class="text-xs opacity-80"><i class="bi bi-calendar3"></i> ${fd(l.date)}</span></div><p class="text-sm opacity-90 mt-2 mb-3">${l.summary}</p><a href="${fp("notes",l.filename)}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-3 py-1.5 bg-white text-brand-700 rounded-lg text-sm font-medium no-underline hover:bg-slate-100 transition-colors"><i class="bi bi-file-earmark-pdf-fill"></i> ${t("Download","Descargar")}</a></div></div>`}
@@ -1269,35 +1546,35 @@ function renderDocuments(){
 
 // ===== PHOTOS PAGE =====
 function renderPhotos(){
-  let h=`<div class="bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 text-white pt-20 md:pt-24 pb-10 md:pb-14 relative overflow-hidden hero-mesh"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
-    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight"><i class="bi bi-images"></i> ${t("Event Gallery","Galería de Eventos")}</h1><p class="opacity-80 text-sm mt-1">${t("Grapevine &amp; La Viña at NETA 65 events, assemblies, and workshops","Grapevine y La Viña en eventos, asambleas y talleres de NETA 65")}</p>
-  </div></div><div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">`;
+  let h=`${heroHtml("photos")}<div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">`;
   if(GOOGLE_DRIVE.photos){h+=`<div class="mb-5 text-center"><a href="${GOOGLE_DRIVE.photos}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium border border-blue-200 transition-colors no-underline"><i class="bi bi-google"></i> ${t("View All Photos on Google Drive","Ver Todas las Fotos en Google Drive")}</a></div>`}
   if(!BOOTH_PHOTOS.length){h+='<p class="text-sm text-slate-500">'+t("No photos yet.","Aún no hay fotos.")+'</p></div></div>';document.getElementById("pg-photos").innerHTML=h;return}
   h+=`<div class="relative rounded-2xl overflow-hidden bg-slate-900 max-w-5xl mx-auto" id="gal">
     <div class="absolute top-3 right-3 bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-semibold z-[2]"><span id="gc">1</span> / ${BOOTH_PHOTOS.length}</div>
     <div class="gal-track flex" id="gt">`;
-  BOOTH_PHOTOS.forEach(p=>{const cap=_lang==="es"&&p.caption_es?p.caption_es:p.caption;h+=`<div class="min-w-full aspect-video relative"><img src="${fp("photos",p.filename)}" alt="${cap}" loading="lazy" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/900x506/1e293b/94a3b8?text=${encodeURIComponent(cap)}'"><div class="absolute bottom-0 w-full px-5 pb-4 pt-10 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-medium">${cap}</div></div>`});
+  // Drive sharing links must go through driveUrl(...,"image") so they load
+  // via Drive's thumbnail endpoint (the bare /file/d/.../view URL is HTML, not an image).
+  BOOTH_PHOTOS.forEach(p=>{const cap=_lang==="es"&&p.caption_es?p.caption_es:p.caption;const imgSrc=driveUrl(fp("photos",p.filename),"image");h+=`<div class="min-w-full aspect-video relative"><img src="${imgSrc}" alt="${cap}" loading="lazy" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/900x506/1e293b/94a3b8?text=${encodeURIComponent(cap)}'"><div class="absolute bottom-0 w-full px-5 pb-4 pt-10 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-medium">${cap}</div></div>`});
   h+=`</div>
-    <button type="button" class="absolute top-1/2 left-3 -translate-y-1/2 bg-white/15 backdrop-blur-md text-white border border-white/20 w-10 h-10 rounded-full text-base cursor-pointer z-[2] flex items-center justify-center hover:bg-white/30 transition-all" onclick="gm(-1)" aria-label="${t("Previous","Anterior")}"><i class="bi bi-chevron-left"></i></button>
-    <button type="button" class="absolute top-1/2 right-3 -translate-y-1/2 bg-white/15 backdrop-blur-md text-white border border-white/20 w-10 h-10 rounded-full text-base cursor-pointer z-[2] flex items-center justify-center hover:bg-white/30 transition-all" onclick="gm(1)" aria-label="${t("Next","Siguiente")}"><i class="bi bi-chevron-right"></i></button>
+    <button type="button" class="absolute top-1/2 left-2 sm:left-3 -translate-y-1/2 bg-white/15 backdrop-blur-md text-white border border-white/20 w-11 h-11 rounded-full text-lg cursor-pointer z-[2] flex items-center justify-center hover:bg-white/30 transition-all" onclick="gm(-1)" aria-label="${t("Previous","Anterior")}"><i class="bi bi-chevron-left"></i></button>
+    <button type="button" class="absolute top-1/2 right-2 sm:right-3 -translate-y-1/2 bg-white/15 backdrop-blur-md text-white border border-white/20 w-11 h-11 rounded-full text-lg cursor-pointer z-[2] flex items-center justify-center hover:bg-white/30 transition-all" onclick="gm(1)" aria-label="${t("Next","Siguiente")}"><i class="bi bi-chevron-right"></i></button>
   </div>
-  <div class="flex justify-center gap-1.5 py-3" id="gd">`;
-  BOOTH_PHOTOS.forEach((_,i)=>{h+=`<button type="button" class="gal-dot w-2 h-2 rounded-full bg-slate-300 border-none cursor-pointer transition-all p-0 ${i===0?'!bg-brand-600 !w-6':''}" onclick="gg(${i})" aria-label="${t("Photo","Foto")} ${i+1}"></button>`});
+  <div class="flex justify-center gap-1 py-3" id="gd">`;
+  // Each dot gets a 24×24 hit area (.gal-dot-wrap) wrapping a small visible
+  // indicator (.gal-dot). Effective tap target meets WCAG minimum.
+  BOOTH_PHOTOS.forEach((_,i)=>{h+=`<button type="button" class="gal-dot-wrap ${i===0?'active':''}" onclick="gg(${i})" aria-label="${t("Photo","Foto")} ${i+1}"><span class="gal-dot"></span></button>`});
   h+='</div></div></div>';document.getElementById("pg-photos").innerHTML=h;
-  const tk=document.getElementById("gt");let tx=0;
-  tk.addEventListener("touchstart",e=>{tx=e.touches[0].clientX},{passive:true});
-  tk.addEventListener("touchend",e=>{const d=tx-e.changedTouches[0].clientX;if(Math.abs(d)>50)gm(d>0?1:-1)},{passive:true});
+  // touchStartX is renamed from `tx` to avoid shadowing the tx() translation helper
+  const tk=document.getElementById("gt");let touchStartX=0;
+  tk.addEventListener("touchstart",e=>{touchStartX=e.touches[0].clientX},{passive:true});
+  tk.addEventListener("touchend",e=>{const d=touchStartX-e.changedTouches[0].clientX;if(Math.abs(d)>50)gm(d>0?1:-1)},{passive:true});
   startGal()}
 
 // ===== MEDIA PAGE =====
 function renderMedia(){
   const rVids=[...YOUTUBE_VIDEOS].sort(()=>Math.random()-.5);
-  const rEps=[...SPOTIFY_EPISODES].sort(()=>Math.random()-.5);
-  let h=`<div class="bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 text-white pt-20 md:pt-24 pb-10 md:pb-14 relative overflow-hidden hero-mesh"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
-    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight"><i class="bi bi-play-circle-fill"></i> ${t("Listen &amp; Watch","Escuchar y Ver")}</h1>
-    <p class="opacity-80 text-sm mt-1">${t("Podcast, videos, and social media from AA Grapevine — refreshes each visit","Podcast, videos y redes sociales de AA Grapevine — se actualizan en cada visita")}</p>
-  </div></div>
+  const rEps=[...PODCAST_EPISODES].sort(()=>Math.random()-.5);
+  let h=`${heroHtml("media")}
   <div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
     <div class="flex flex-wrap gap-1 bg-slate-100 rounded-lg p-1 mb-5 w-fit">
       <button type="button" class="tab-btn active !bg-white !text-brand-600 !shadow-sm !font-semibold px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 border-none bg-transparent cursor-pointer transition-all" onclick="sTab('med','pod',this)"><i class="bi bi-mic"></i> Podcast</button>
@@ -1306,12 +1583,12 @@ function renderMedia(){
     </div>
     <div class="tpanel active" id="med-pod">
       <div class="grid lg:grid-cols-5 gap-4 mb-4">
-        <div class="lg:col-span-2"><div class="rounded-xl overflow-hidden bg-slate-900"><iframe src="https://open.spotify.com/embed/show/${SPOTIFY_SHOW_ID}?utm_source=generator&theme=0" height="240" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen loading="lazy" title="AA Grapevine Podcast" class="w-full border-none"></iframe></div></div>
+        <div class="lg:col-span-2"><div class="rounded-xl overflow-hidden bg-slate-900"><iframe src="https://embed.podcasts.apple.com/us/podcast/${APPLE_SHOW_SLUG}/id${APPLE_SHOW_ID}?theme=light" height="450" allow="autoplay *; encrypted-media *; clipboard-write" allowtransparency="true" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" loading="lazy" title="AA Grapevine Podcast" class="w-full border-none"></iframe></div></div>
         <div class="lg:col-span-3">
           <p class="text-sm text-slate-600"><strong>"The AA Grapevine Half-Hour Variety Hour"</strong> — ${t("hosted by Don, Olis, and Sam. New episode every Monday, free on all platforms.","conducido por Don, Olis y Sam. Episodio nuevo cada lunes, gratis en todas las plataformas.")}</p>
           <p class="text-sm text-slate-600 mt-2"><strong>${t("GV Weekly Open Meeting","Reunión Abierta Semanal de GV")}</strong> — ${t("Live","En vivo")} ${WEEKLY_OPEN.day} ${t("at","a las")} ${WEEKLY_OPEN.time} ${t("on Zoom","por Zoom")} (ID: ${WEEKLY_OPEN.zoomId}, ${t("Passcode","Clave")}: ${WEEKLY_OPEN.passcode}). <a href="https://www.aagrapevine.org/grapevine-weekly-open" target="_blank" rel="noopener" class="text-brand-600 hover:text-brand-700 underline">${t("Recordings &amp; details","Grabaciones y detalles")}</a></p>
           <div class="flex flex-wrap gap-2 mt-3">
-            <a href="https://open.spotify.com/show/${SPOTIFY_SHOW_ID}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 text-slate-700 hover:border-brand-600 hover:text-brand-600 hover:bg-brand-50 transition-all no-underline"><i class="bi bi-spotify"></i> Spotify</a>
+            <a href="https://open.spotify.com/show/714djcL57SFf0Nzf40CL8Q" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 text-slate-700 hover:border-brand-600 hover:text-brand-600 hover:bg-brand-50 transition-all no-underline"><i class="bi bi-spotify"></i> Spotify</a>
             <a href="https://podcasts.apple.com/us/podcast/aa-grapevines-podcast/id1591924167" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 text-slate-700 hover:border-brand-600 hover:text-brand-600 hover:bg-brand-50 transition-all no-underline"><i class="bi bi-apple"></i> Apple Podcasts</a>
             <a href="https://music.amazon.com/podcasts/de231bfa-837b-4a27-a331-a927019cb5d7" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 text-slate-700 hover:border-brand-600 hover:text-brand-600 hover:bg-brand-50 transition-all no-underline"><i class="bi bi-amazon"></i> Amazon</a>
             <a href="https://www.aagrapevine.org/grapevine-variety-hour" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 text-slate-700 hover:border-brand-600 hover:text-brand-600 hover:bg-brand-50 transition-all no-underline"><i class="bi bi-globe2"></i> Web</a>
@@ -1319,7 +1596,7 @@ function renderMedia(){
         </div>
       </div>
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">`;
-  rEps.slice(0,8).forEach(ep=>{h+=`<div class="bg-white border border-slate-200 rounded-xl overflow-hidden card-lift hover:border-brand-100"><iframe src="https://open.spotify.com/embed/episode/${ep.id}?utm_source=generator&theme=0" height="152" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen loading="lazy" title="${ep.title}" class="w-full border-none"></iframe></div>`});
+  rEps.slice(0,8).forEach(ep=>{h+=`<div class="bg-white border border-slate-200 rounded-xl overflow-hidden card-lift hover:border-brand-100"><iframe src="https://embed.podcasts.apple.com/us/podcast/${APPLE_SHOW_SLUG}/id${APPLE_SHOW_ID}?i=${ep.id}&theme=light" height="175" allow="autoplay *; encrypted-media *; clipboard-write" allowtransparency="true" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" loading="lazy" title="${ep.title}" class="w-full border-none"></iframe></div>`});
   h+=`</div></div>
     <div class="tpanel" id="med-vid"><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">`;
   rVids.slice(0,12).forEach(v=>{h+=vidCard(v)});
@@ -1341,9 +1618,7 @@ function renderResources(){
     {id:"listen",label:t("Listen & Follow","Escuchar y Seguir"),icon:"bi-play-circle",color:"bg-pink-50 text-pink-600"},
     {id:"aa",label:"AA & NETA 65",icon:"bi-globe",color:"bg-sky-50 text-sky-600"},
   ];
-  let h=`<div class="bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 text-white pt-20 md:pt-24 pb-10 md:pb-14 relative overflow-hidden hero-mesh"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
-    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight"><i class="bi bi-link-45deg"></i> ${t("Resources","Recursos")}</h1><p class="opacity-80 text-sm mt-1">${RESOURCES.length} ${t("links to help you connect, serve, and grow","enlaces para ayudarte a conectar, servir y crecer")}</p>
-  </div></div><div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">`;
+  let h=`${heroHtml("resources",{count:RESOURCES.length})}<div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">`;
   groups.forEach(g=>{
     const items=RESOURCES.filter(r=>r.cat===g.id);
     if(!items.length)return;
