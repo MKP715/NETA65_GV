@@ -72,6 +72,29 @@
     .gal-dot-wrap .gal-dot{width:8px;height:8px;border-radius:9999px;background:#cbd5e1;transition:all .25s}
     .gal-dot-wrap:hover .gal-dot{background:#94a3b8}
     .gal-dot-wrap.active .gal-dot{width:24px;background:#0170B9}
+    /* Photo grid thumbnail */
+    .photo-thumb{position:relative;overflow:hidden;border-radius:12px;cursor:pointer;aspect-ratio:1;background:#1e293b}
+    .photo-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .4s cubic-bezier(.4,0,.2,1),filter .4s}
+    .photo-thumb:hover img{transform:scale(1.08);filter:brightness(1.1)}
+    .photo-thumb .photo-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.55) 0%,transparent 50%);opacity:0;transition:opacity .3s;display:flex;align-items:flex-end;padding:10px 12px}
+    .photo-thumb:hover .photo-overlay{opacity:1}
+    .photo-thumb .photo-overlay span{color:#fff;font-size:.72rem;font-weight:500;line-height:1.3}
+    .photo-thumb .photo-zoom{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.7);opacity:0;transition:all .3s;color:#fff;font-size:1.5rem;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
+    .photo-thumb:hover .photo-zoom{opacity:.85;transform:translate(-50%,-50%) scale(1)}
+    /* Lightbox */
+    .lightbox-overlay{position:fixed;inset:0;z-index:1090;background:rgba(0,0,0,.92);opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s;display:flex;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+    .lightbox-overlay.open{opacity:1;visibility:visible}
+    .lightbox-img{max-width:92vw;max-height:85vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);object-fit:contain;transition:opacity .25s;-webkit-user-select:none;user-select:none}
+    .lightbox-cap{position:absolute;bottom:env(safe-area-inset-bottom,12px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;padding:8px 20px;border-radius:9999px;font-size:.8rem;font-weight:500;max-width:90vw;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:#fff;width:48px;height:48px;border-radius:50%;font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+    .lightbox-nav:hover{background:rgba(255,255,255,.25)}
+    .lightbox-nav.lb-prev{left:max(12px,env(safe-area-inset-left))}
+    .lightbox-nav.lb-next{right:max(12px,env(safe-area-inset-right))}
+    .lightbox-close{position:absolute;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+    .lightbox-close:hover{background:rgba(255,255,255,.25)}
+    .lightbox-counter{position:absolute;top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;padding:6px 14px;border-radius:9999px;font-size:.75rem;font-weight:600}
+    /* Photo category badge */
+    .photo-cat-badge{position:absolute;top:8px;left:8px;padding:2px 8px;border-radius:6px;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;z-index:1}
     .page{display:none}.page.active{display:block;animation:pageIn .4s ease}
     @keyframes pageIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
     @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
@@ -227,6 +250,16 @@
         <div class="absolute inset-0 flex items-center justify-center text-slate-400" id="pdfLoader"><i class="bi bi-arrow-repeat text-3xl animate-spin"></i><span class="ml-3 text-sm font-medium" id="pdfLoaderTxt">Loading document...</span></div>
       </div>
     </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox-overlay" id="lbOverlay" onclick="closeLb()">
+    <div class="lightbox-counter" id="lbCounter"></div>
+    <button type="button" class="lightbox-close" onclick="closeLb()" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+    <button type="button" class="lightbox-nav lb-prev" onclick="event.stopPropagation();lbNav(-1)" aria-label="Previous"><i class="bi bi-chevron-left"></i></button>
+    <img class="lightbox-img" id="lbImg" onclick="event.stopPropagation()" alt="" draggable="false">
+    <button type="button" class="lightbox-nav lb-next" onclick="event.stopPropagation();lbNav(1)" aria-label="Next"><i class="bi bi-chevron-right"></i></button>
+    <div class="lightbox-cap" id="lbCap"></div>
   </div>
 
 <script>
@@ -530,7 +563,7 @@ const PAGE_HEROES = {
   meeting:    { icon:"bi-camera-video-fill",   title:"Meeting Details",                         title_es:"Detalles de la Reunión",                 sub:"Monthly committee meeting schedule and Zoom info",                          sub_es:"Horario de la reunión mensual del comité e información de Zoom" },
   events:     { icon:"bi-calendar-event-fill", title:"Events",                                  title_es:"Eventos",                                sub:"{up} upcoming &middot; {pa} past",                                          sub_es:"{up} próximos &middot; {pa} pasados" },
   documents:  { icon:"bi-folder-fill",         title:"Documents",                               title_es:"Documentos",                             sub:"Reports, meeting notes, and presentation slides",                           sub_es:"Informes, minutas y presentaciones" },
-  photos:     { icon:"bi-images",              title:"Event Gallery",                           title_es:"Galería de Eventos",                     sub:"Grapevine &amp; La Viña at NETA 65 events, assemblies, and workshops",      sub_es:"Grapevine y La Viña en eventos, asambleas y talleres de NETA 65" },
+  photos:     { icon:"bi-images",              title:"Event Gallery",                           title_es:"Galería de Eventos",                     sub:"{count} photos — booths, workshops, published authors, and more",      sub_es:"{count} fotos — mesas, talleres, autores publicados y más" },
   media:      { icon:"bi-play-circle-fill",    title:"Listen &amp; Watch",                      title_es:"Escuchar y Ver",                         sub:"Podcast, videos, and social media from AA Grapevine — refreshes each visit", sub_es:"Podcast, videos y redes sociales de AA Grapevine — se actualizan en cada visita" },
   resources:  { icon:"bi-link-45deg",          title:"Resources",                               title_es:"Recursos",                               sub:"{count} links to help you connect, serve, and grow",                        sub_es:"{count} enlaces para ayudarte a conectar, servir y crecer" },
 };
@@ -1223,13 +1256,25 @@ function closePdf(){
   _pdfCloseTimer=setTimeout(()=>{document.getElementById("pdfMB").querySelectorAll("iframe").forEach(el=>el.remove())},300);
 }
 
-// Gallery
-let si=0,galTimer=null;
-function gm(d){if(!BOOTH_PHOTOS.length)return;si=(si+d+BOOTH_PHOTOS.length)%BOOTH_PHOTOS.length;gu();clearInterval(galTimer);startGal()}
-function gg(i){if(!BOOTH_PHOTOS.length)return;si=i;gu();clearInterval(galTimer);startGal()}
-function gu(){const gt=document.getElementById("gt");if(!gt||!BOOTH_PHOTOS.length)return;gt.style.transform=`translateX(-${si*100}%)`;document.querySelectorAll(".gal-dot-wrap").forEach((d,i)=>d.classList.toggle("active",i===si));const gc=document.getElementById("gc");if(gc)gc.textContent=si+1}
-function startGal(){clearInterval(galTimer);if(!BOOTH_PHOTOS.length)return;galTimer=setInterval(()=>{si=(si+1)%BOOTH_PHOTOS.length;gu()},5000)}
+// Gallery — featured carousel
+let si=0,galTimer=null,_featuredPhotos=[];
+function gm(d){if(!_featuredPhotos.length)return;si=(si+d+_featuredPhotos.length)%_featuredPhotos.length;gu();clearInterval(galTimer);startGal()}
+function gg(i){if(!_featuredPhotos.length)return;si=i;gu();clearInterval(galTimer);startGal()}
+function gu(){const gt=document.getElementById("gt");if(!gt||!_featuredPhotos.length)return;gt.style.transform=`translateX(-${si*100}%)`;document.querySelectorAll(".gal-dot-wrap").forEach((d,i)=>d.classList.toggle("active",i===si));const gc=document.getElementById("gc");if(gc)gc.textContent=si+1}
+function startGal(){clearInterval(galTimer);if(!_featuredPhotos.length)return;galTimer=setInterval(()=>{si=(si+1)%_featuredPhotos.length;gu()},5000)}
 function stopGal(){clearInterval(galTimer);galTimer=null}
+// Lightbox
+let _lbPhotos=[],_lbIdx=0;
+function openLb(photos,idx){_lbPhotos=photos;_lbIdx=idx;_lbRender();document.getElementById("lbOverlay").classList.add("open");document.body.style.overflow="hidden"}
+function closeLb(){document.getElementById("lbOverlay").classList.remove("open");document.body.style.overflow=""}
+function lbNav(d){if(!_lbPhotos.length)return;_lbIdx=(_lbIdx+d+_lbPhotos.length)%_lbPhotos.length;_lbRender()}
+function _lbRender(){const p=_lbPhotos[_lbIdx];if(!p)return;const img=document.getElementById("lbImg");const cap=document.getElementById("lbCap");const ctr=document.getElementById("lbCounter");img.src=driveUrl(fp("photos",p.filename),"image");const c=_lang==="es"&&p.caption_es?p.caption_es:p.caption;img.alt=c;cap.textContent=c;ctr.textContent=(_lbIdx+1)+" / "+_lbPhotos.length}
+// Delegated lightbox click handler — builds photo list from currently visible grid items
+document.addEventListener("click",function(e){const thumb=e.target.closest(".photo-thumb[data-lb-group]");if(!thumb)return;const idx=parseInt(thumb.dataset.lbIdx,10);const visible=[...document.querySelectorAll('#photoGrid .photo-thumb')].filter(x=>x.style.display!=='none');const photos=visible.map(el=>{const ci=parseInt(el.dataset.lbIdx,10);const allIdx=[...document.querySelectorAll('#photoGrid .photo-thumb')].indexOf(el);return BOOTH_PHOTOS[allIdx]}).filter(Boolean);openLb(photos,idx)})
+// Lightbox keyboard nav
+document.addEventListener("keydown",function(e){if(!document.getElementById("lbOverlay").classList.contains("open"))return;if(e.key==="ArrowRight")lbNav(1);else if(e.key==="ArrowLeft")lbNav(-1);else if(e.key==="Escape")closeLb()})
+// Photo category helper
+function _photoCategory(p){const c=p.caption||"";if(c.includes("Promotional")||c.startsWith("GV/LV —"))return"promo";if(c.includes("Published in Grapevine"))return"gv";if(c.includes("Published in La"))return"lv";return"event"}
 
 // Countdown
 let cdTimer;
@@ -1756,31 +1801,89 @@ function renderDocuments(){
 // ===== PHOTOS PAGE =====
 function renderPhotos(){
   si=0;
-  let h=`${heroHtml("photos")}<div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">`;
-  if(GOOGLE_DRIVE.photos){h+=`<div class="mb-5 text-center"><a href="${GOOGLE_DRIVE.photos}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium border border-blue-200 transition-colors no-underline"><i class="bi bi-google"></i> ${t("View All Photos on Google Drive","Ver Todas las Fotos en Google Drive")}</a></div>`}
+  const cats=[
+    {id:"all",   label:t("All","Todas"),                        icon:"bi-grid-3x3-gap", count:BOOTH_PHOTOS.length},
+    {id:"event", label:t("Booth & Events","Mesa y Eventos"),    icon:"bi-calendar-event",count:BOOTH_PHOTOS.filter(p=>_photoCategory(p)==="event").length},
+    {id:"gv",    label:t("Published in GV","Publicados en GV"), icon:"bi-journal-richtext",count:BOOTH_PHOTOS.filter(p=>_photoCategory(p)==="gv").length},
+    {id:"lv",    label:t("Published in LV","Publicados en LV"), icon:"bi-translate",    count:BOOTH_PHOTOS.filter(p=>_photoCategory(p)==="lv").length},
+    {id:"promo", label:t("Promotional","Promocional"),          icon:"bi-megaphone",    count:BOOTH_PHOTOS.filter(p=>_photoCategory(p)==="promo").length},
+  ].filter(c=>c.count>0);
+  let h=`${heroHtml("photos",{count:BOOTH_PHOTOS.length})}<div class="py-8 md:py-12"><div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">`;
+  if(GOOGLE_DRIVE.photos){h+=`<div class="mb-6 text-center"><a href="${GOOGLE_DRIVE.photos}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium border border-blue-200 transition-colors no-underline"><i class="bi bi-google"></i> ${t("View All Photos on Google Drive","Ver Todas las Fotos en Google Drive")}</a></div>`}
   if(!BOOTH_PHOTOS.length){h+='<p class="text-sm text-slate-500">'+t("No photos yet.","Aún no hay fotos.")+'</p></div></div>';document.getElementById("pg-photos").innerHTML=h;return}
-  h+=`<div class="relative rounded-2xl overflow-hidden bg-slate-900 max-w-5xl mx-auto" id="gal">
-    <div class="absolute top-3 right-3 bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-semibold z-[2]"><span id="gc">1</span> / ${BOOTH_PHOTOS.length}</div>
-    <div class="gal-track flex" id="gt">`;
-  // Drive sharing links must go through driveUrl(...,"image") so they load
-  // via Drive's thumbnail endpoint (the bare /file/d/.../view URL is HTML, not an image).
-  BOOTH_PHOTOS.forEach(p=>{const cap=_lang==="es"&&p.caption_es?p.caption_es:p.caption;const safeCap=cap.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");const imgSrc=driveUrl(fp("photos",p.filename),"image");h+=`<div class="min-w-full aspect-video relative"><img src="${imgSrc}" alt="${safeCap}" loading="lazy" class="w-full h-full object-cover" onerror="if(!this.dataset.errored){this.dataset.errored='1';this.src='https://placehold.co/900x506/1e293b/94a3b8?text=${encodeURIComponent(cap)}'}"><div class="absolute bottom-0 w-full px-5 pb-4 pt-10 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-medium">${cap}</div></div>`});
-  h+=`</div>
-    <button type="button" class="absolute top-1/2 left-2 sm:left-3 -translate-y-1/2 bg-white/15 backdrop-blur-md text-white border border-white/20 w-11 h-11 rounded-full text-lg cursor-pointer z-[2] flex items-center justify-center hover:bg-white/30 transition-all" onclick="gm(-1)" aria-label="${t("Previous","Anterior")}"><i class="bi bi-chevron-left"></i></button>
-    <button type="button" class="absolute top-1/2 right-2 sm:right-3 -translate-y-1/2 bg-white/15 backdrop-blur-md text-white border border-white/20 w-11 h-11 rounded-full text-lg cursor-pointer z-[2] flex items-center justify-center hover:bg-white/30 transition-all" onclick="gm(1)" aria-label="${t("Next","Siguiente")}"><i class="bi bi-chevron-right"></i></button>
-  </div>
-  <div class="flex justify-center gap-1 py-3" id="gd">`;
-  // Each dot gets a 24×24 hit area (.gal-dot-wrap) wrapping a small visible
-  // indicator (.gal-dot). Effective tap target meets WCAG minimum.
-  BOOTH_PHOTOS.forEach((_,i)=>{h+=`<button type="button" class="gal-dot-wrap ${i===0?'active':''}" onclick="gg(${i})" aria-label="${t("Photo","Foto")} ${i+1}"><span class="gal-dot"></span></button>`});
-  h+='</div></div></div>';document.getElementById("pg-photos").innerHTML=h;
-  // Touch swipe support for gallery — listeners are on the fresh DOM node created above
+  // ── Stats row ──
+  h+=`<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8 max-w-3xl mx-auto">`;
+  const statItems=[
+    {n:BOOTH_PHOTOS.filter(p=>_photoCategory(p)==="event").length,l:t("Event Photos","Fotos de Eventos"),ic:"bi-camera",bg:"bg-pink-50 text-pink-600"},
+    {n:BOOTH_PHOTOS.filter(p=>_photoCategory(p)==="gv").length,l:t("GV Authors","Autores GV"),ic:"bi-journal-richtext",bg:"bg-blue-50 text-blue-600"},
+    {n:BOOTH_PHOTOS.filter(p=>_photoCategory(p)==="lv").length,l:t("LV Authors","Autores LV"),ic:"bi-translate",bg:"bg-amber-50 text-amber-600"},
+    {n:BOOTH_PHOTOS.filter(p=>_photoCategory(p)==="promo").length,l:t("Promotional","Promocional"),ic:"bi-megaphone",bg:"bg-green-50 text-green-600"},
+  ];
+  statItems.forEach(s=>{h+=`<div class="bg-white border border-slate-200 rounded-xl p-4 text-center card-lift hover:border-brand-100"><div class="w-9 h-9 ${s.bg} rounded-lg flex items-center justify-center text-base mx-auto mb-2"><i class="bi ${s.ic}"></i></div><div class="text-2xl font-extrabold text-slate-900">${s.n}</div><div class="text-[.68rem] text-slate-500 font-medium">${s.l}</div></div>`});
+  h+=`</div>`;
+  // ── Featured carousel (top 8 event photos by largest file — best quality) ──
+  _featuredPhotos=BOOTH_PHOTOS.filter(p=>_photoCategory(p)==="event").slice(0,8);
+  if(_featuredPhotos.length){
+    h+=`<div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 bg-pink-50 text-pink-600 rounded-lg flex items-center justify-center text-lg shrink-0"><i class="bi bi-star"></i></div><div><h2 class="text-xl font-bold text-slate-900">${t("Featured Photos","Fotos Destacadas")}</h2><p class="text-sm text-slate-500">${t("Highlights from our booths, workshops, and events","Lo mejor de nuestras mesas, talleres y eventos")}</p></div></div>`;
+    h+=`<div class="relative rounded-2xl overflow-hidden bg-slate-900 max-w-5xl mx-auto mb-2" id="gal">
+      <div class="absolute top-3 right-3 bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-semibold z-[2]"><span id="gc">1</span> / ${_featuredPhotos.length}</div>
+      <div class="gal-track flex" id="gt">`;
+    _featuredPhotos.forEach(p=>{const cap=tx(p,"caption");const safeCap=cap.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");const imgSrc=driveUrl(fp("photos",p.filename),"image");h+=`<div class="min-w-full aspect-video relative"><img src="${imgSrc}" alt="${safeCap}" loading="lazy" class="w-full h-full object-cover" onerror="if(!this.dataset.errored){this.dataset.errored='1';this.src='https://placehold.co/900x506/1e293b/94a3b8?text=${encodeURIComponent(cap)}'}"><div class="absolute bottom-0 w-full px-5 pb-4 pt-10 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-medium">${cap}</div></div>`});
+    h+=`</div>
+      <button type="button" class="absolute top-1/2 left-2 sm:left-3 -translate-y-1/2 bg-white/15 backdrop-blur-md text-white border border-white/20 w-11 h-11 rounded-full text-lg cursor-pointer z-[2] flex items-center justify-center hover:bg-white/30 transition-all" onclick="gm(-1)" aria-label="${t("Previous","Anterior")}"><i class="bi bi-chevron-left"></i></button>
+      <button type="button" class="absolute top-1/2 right-2 sm:right-3 -translate-y-1/2 bg-white/15 backdrop-blur-md text-white border border-white/20 w-11 h-11 rounded-full text-lg cursor-pointer z-[2] flex items-center justify-center hover:bg-white/30 transition-all" onclick="gm(1)" aria-label="${t("Next","Siguiente")}"><i class="bi bi-chevron-right"></i></button>
+    </div>
+    <div class="flex justify-center gap-1 py-3" id="gd">`;
+    _featuredPhotos.forEach((_,i)=>{h+=`<button type="button" class="gal-dot-wrap ${i===0?'active':''}" onclick="gg(${i})" aria-label="${t("Photo","Foto")} ${i+1}"><span class="gal-dot"></span></button>`});
+    h+=`</div>`;
+  }
+  // ── Category filter tabs ──
+  h+=`<div class="flex items-center gap-3 mt-8 mb-4"><div class="w-10 h-10 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center text-lg shrink-0"><i class="bi bi-grid-3x3-gap"></i></div><div><h2 class="text-xl font-bold text-slate-900">${t("Browse All Photos","Explorar Todas las Fotos")}</h2><p class="text-sm text-slate-500">${t("Click any photo to view full size","Haz clic en cualquier foto para ver a tamaño completo")}</p></div></div>`;
+  h+=`<div class="flex flex-wrap gap-1 bg-slate-100 rounded-lg p-1 mb-5 w-fit">`;
+  cats.forEach((c,i)=>{const active=i===0?"active !bg-white !text-brand-600 !shadow-sm !font-semibold":"";h+=`<button type="button" class="tab-btn ${active} px-3 py-1.5 rounded-md text-xs font-medium text-slate-600 border-none bg-transparent cursor-pointer transition-all hover:text-slate-900" onclick="filterPhotos('${c.id}',this)"><i class="bi ${c.icon}"></i> ${c.label} <span class="text-slate-400">(${c.count})</span></button>`});
+  h+=`</div>`;
+  // ── Photo grid ──
+  const catColors={event:"bg-pink-500 text-white",gv:"bg-blue-500 text-white",lv:"bg-amber-500 text-white",promo:"bg-green-500 text-white"};
+  const catLabels={event:"Event",gv:"GV",lv:"LV",promo:"Promo"};
+  h+=`<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3" id="photoGrid">`;
+  BOOTH_PHOTOS.forEach((p,i)=>{
+    const cat=_photoCategory(p);
+    const cap=tx(p,"caption");
+    const safeCap=cap.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+    const imgSrc=driveUrl(fp("photos",p.filename),"image");
+    const badge=catColors[cat]||"bg-slate-500 text-white";
+    const catIdx=BOOTH_PHOTOS.filter((pp,ii)=>ii<=i&&(cat==="all"||_photoCategory(pp)===cat)).length-1;
+    h+=`<div class="photo-thumb" data-cat="${cat}" data-lb-group="${cat}" data-lb-idx="${catIdx}" role="button" tabindex="0" aria-label="${safeCap}" onkeydown="if(event.key==='Enter')this.click()">
+      <span class="photo-cat-badge ${badge}">${catLabels[cat]||cat}</span>
+      <img src="${imgSrc}" alt="${safeCap}" loading="lazy" onerror="if(!this.dataset.errored){this.dataset.errored='1';this.style.display='none'}">
+      <div class="photo-overlay"><span>${cap}</span></div>
+      <i class="bi bi-arrows-fullscreen photo-zoom"></i>
+    </div>`;
+  });
+  h+=`</div></div></div>`;
+  document.getElementById("pg-photos").innerHTML=h;
+  // Touch swipe support for featured carousel
   const tk=document.getElementById("gt");
   if(tk){let touchStartX=0;
     tk.addEventListener("touchstart",e=>{touchStartX=e.touches[0].clientX},{passive:true});
     tk.addEventListener("touchend",e=>{const d=touchStartX-e.changedTouches[0].clientX;if(Math.abs(d)>50)gm(d>0?1:-1)},{passive:true});
   }
   startGal()}
+// Photo grid filter
+function filterPhotos(cat,btn){
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>{b.classList.remove('active','!bg-white','!text-brand-600','!shadow-sm','!font-semibold')});
+  btn.classList.add('active','!bg-white','!text-brand-600','!shadow-sm','!font-semibold');
+  document.querySelectorAll('#photoGrid .photo-thumb').forEach(el=>{
+    const match=cat==='all'||el.dataset.cat===cat;
+    el.style.display=match?'':'none';
+    // Update lightbox index for filtered view
+    if(match){
+      el.dataset.lbGroup=cat;
+      const visible=[...document.querySelectorAll('#photoGrid .photo-thumb')].filter(x=>x.style.display!=='none');
+      visible.forEach((x,i)=>{x.dataset.lbIdx=i});
+    }
+  });
+}
 
 // ===== MEDIA PAGE =====
 function renderMedia(){
@@ -1915,7 +2018,7 @@ const btt=document.getElementById("btt");
 function updateHeader(){const hdr=document.getElementById("hdr");if(window.scrollY<=60){hdr.classList.add("hdr-transparent");hdr.classList.remove("hdr-solid","shadow-lg")}else{hdr.classList.remove("hdr-transparent");hdr.classList.add("hdr-solid");hdr.classList.toggle("shadow-lg",window.scrollY>10)}}
 window.addEventListener("scroll",()=>{btt.classList.toggle("visible",window.scrollY>400);updateHeader()});
 btt.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"}));
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeSidebar();closeModal();closePdf()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeSidebar();closeModal();closePdf();closeLb()}});
 // Intercept document link clicks on GVR and Documents pages — open inline viewer
 // instead of external tab. Handles local PDFs, images, AND Google Drive URLs.
 // Uses delegated handler on document so it survives innerHTML rebuilds (language toggle)
