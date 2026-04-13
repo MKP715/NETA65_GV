@@ -240,17 +240,17 @@ const BASE_PATH = "";
    ────────────────────────────────────────────────────────────── */
 let GOOGLE_DRIVE = { reports:"", notes:"", slides:"", flyers:"", photos:"" };
 const NAV_SECTIONS = [
-  { id:"home",       label:"Home",           icon:"bi-house" },
-  { id:"meeting",    label:"Meeting",        icon:"bi-camera-video" },
-  { id:"events",     label:"Events",         icon:"bi-calendar-event" },
-  { id:"subscribe",  label:"Subscribe",      icon:"bi-cart" },
-  { id:"contribute", label:"Contribute",     icon:"bi-pencil-square" },
-  { id:"about",      label:"About GV/LV",    icon:"bi-info-circle" },
-  { id:"gvr",        label:"GVR Corner",     icon:"bi-person-badge" },
-  { id:"documents",  label:"Documents",      icon:"bi-folder" },
-  { id:"photos",     label:"Event Gallery",  icon:"bi-images" },
-  { id:"media",      label:"Listen & Watch", icon:"bi-play-circle" },
-  { id:"resources",  label:"Resources",      icon:"bi-link-45deg" },
+  { id:"home",       label:"Home",           label_es:"Inicio",                icon:"bi-house" },
+  { id:"meeting",    label:"Meeting",        label_es:"Reunión",               icon:"bi-camera-video" },
+  { id:"events",     label:"Events",         label_es:"Eventos",               icon:"bi-calendar-event" },
+  { id:"subscribe",  label:"Subscribe",      label_es:"Suscribirse",           icon:"bi-cart" },
+  { id:"contribute", label:"Contribute",     label_es:"Contribuir",            icon:"bi-pencil-square" },
+  { id:"about",      label:"About GV/LV",    label_es:"Acerca de GV/LV",       icon:"bi-info-circle" },
+  { id:"gvr",        label:"GVR Corner",     label_es:"Rincón del GVR / RLV",  icon:"bi-person-badge" },
+  { id:"documents",  label:"Documents",      label_es:"Documentos",            icon:"bi-folder" },
+  { id:"photos",     label:"Event Gallery",  label_es:"Galería de Eventos",    icon:"bi-images" },
+  { id:"media",      label:"Listen & Watch", label_es:"Escuchar y Ver",        icon:"bi-play-circle" },
+  { id:"resources",  label:"Resources",      label_es:"Recursos",              icon:"bi-link-45deg" },
 ];
 let ANNOUNCEMENTS = [];
 // GVR special card URLs — defaults overwritten from data/config.csv
@@ -382,13 +382,15 @@ function parseCSV(text){
   return rows;
 }
 async function fetchCSV(path){
-  const resp=await fetch(path);
-  if(!resp.ok)return[];
-  const text=await resp.text();
-  return parseCSV(text);
+  try{
+    const resp=await fetch(path);
+    if(!resp.ok)return[];
+    const text=await resp.text();
+    return parseCSV(text);
+  }catch(e){console.warn("CSV load error ("+path+"):",e);return[]}
 }
 async function loadAllCSV(){
-  const [ann,ev,photos,reports,notes,slides,yt,pods,insta,res,ecal,tl,cfg,gvrdocs,subs,aprods,faqrows,scriptrows]=await Promise.all([
+  const [ann,ev,photos,reports,notes,slides,yt,pods,insta,res,ecal,tl,cfg,gvrdocs,subs,aprods,faqrows,scriptrows,subtypes]=await Promise.all([
     fetchCSV("data/announcements.csv"),
     fetchCSV("data/events.csv"),
     fetchCSV("data/photos.csv"),
@@ -407,6 +409,7 @@ async function loadAllCSV(){
     fetchCSV("data/about_products.csv"),
     fetchCSV("data/faq.csv"),
     fetchCSV("data/scripts.csv"),
+    fetchCSV("data/submission_types.csv"),
   ]);
   ANNOUNCEMENTS=ann;
   SPECIAL_EVENTS=ev;
@@ -424,6 +427,7 @@ async function loadAllCSV(){
   ABOUT_PRODUCTS=aprods;
   FAQ_DATA=faqrows;
   SCRIPTS_DATA=scriptrows;
+  if(subtypes.length)SUBMISSION_TYPES=subtypes;
   // Parse subscription tiers from CSV — features are pipe-delimited with +/- prefixes
   SUBSCRIPTION_TIERS=subs.map(r=>{
     function parseFeatures(s){if(!s)return[];return s.split("|").map(f=>{const ok=f.charAt(0)==="+";return{ok:ok,text:f.substring(1),text_es:""}})}
@@ -500,6 +504,14 @@ function applyConfig(cfg){
   if(v("submit_lv_email")){SUBMIT_CHANNELS.lv.items[1].text=v("submit_lv_email");SUBMIT_CHANNELS.lv.items[1].url="mailto:"+v("submit_lv_email")}
   if(v("submit_lv_mail"))SUBMIT_CHANNELS.lv.items[2].text=v("submit_lv_mail");
   if(v("gift_cta_url"))SUBSCRIPTION_GIFT.ctaUrl=v("gift_cta_url");
+  if(v("gift_title")){SUBSCRIPTION_GIFT.title=v("gift_title");SUBSCRIPTION_GIFT.title_es=es("gift_title")||v("gift_title")}
+  if(v("gift_body")){SUBSCRIPTION_GIFT.body=v("gift_body");SUBSCRIPTION_GIFT.body_es=es("gift_body")||v("gift_body")}
+  if(v("gift_cta_label")){SUBSCRIPTION_GIFT.ctaLabel=v("gift_cta_label");SUBSCRIPTION_GIFT.ctaLabel_es=es("gift_cta_label")||v("gift_cta_label")}
+  if(v("gift_bullets")){
+    const enB=v("gift_bullets").split("|");
+    const esB=(es("gift_bullets")||v("gift_bullets")).split("|");
+    SUBSCRIPTION_GIFT.bullets=enB.map((b,i)=>({text:b,text_es:esB[i]||b}));
+  }
 }
 
 /* ── Page Heroes ─────────────────────────────────────────────────
@@ -587,27 +599,7 @@ let SUPPORT_CONTACT = {
 /* ── Submission Types (Contribute page) ──────────────────────────
    The "What You Can Submit" cards. Add or remove as needed.
    ────────────────────────────────────────────────────────────── */
-const SUBMISSION_TYPES = [
-  { icon:"bi-journal-text",
-    title:"Stories", title_es:"Historias",
-    body:'Most articles are first-person accounts. <strong>Standing departments</strong> accept stories year-round:',
-    body_es:'La mayoría de los artículos son relatos en primera persona. Las <strong>secciones permanentes</strong> aceptan historias todo el año:',
-    note:"Emotional Sobriety, Sponsorship, Newcomers, Youth Enjoying Sobriety, Old-Timers, Home Group, Steps &amp; Traditions",
-    note_es:"Sobriedad Emocional, Padrinazgo, Recién Llegados, Jóvenes en Sobriedad, Veteranos, Grupo Base, Pasos y Tradiciones",
-  },
-  { icon:"bi-palette",
-    title:"Art, Cartoons &amp; Photos", title_es:"Arte, Caricaturas y Fotos",
-    body:'Original cartoons, high-resolution photos (300 dpi JPEG) of AA meetings for "If Walls Could Talk," and artwork.',
-    body_es:'Caricaturas originales, fotos de alta resolución (300 dpi JPEG) de reuniones de AA para "If Walls Could Talk", y obras de arte.',
-    note:"", note_es:"",
-  },
-  { icon:"bi-emoji-laughing",
-    title:"Humor", title_es:"Humor",
-    body:"Jokes and funny stories for the humor section — laughter is part of recovery!",
-    body_es:"Chistes e historias divertidas para la sección de humor — ¡la risa es parte de la recuperación!",
-    note:"", note_es:"",
-  },
-];
+let SUBMISSION_TYPES = [];
 
 /* ── Submit Channels (Contribute page) ───────────────────────────
    Per-magazine submission methods. `theme` controls color (brand
@@ -678,7 +670,8 @@ function driveFileId(url){
   let m;
   if((m=url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)))return m[1];
   if((m=url.match(/\/(?:document|spreadsheets|presentation)\/d\/([a-zA-Z0-9_-]+)/)))return m[1];
-  if((m=url.match(/[?&]id=([a-zA-Z0-9_-]+)/)))return m[1];
+  // Only match ?id= on Google domains — avoids false positives on other sites
+  if(/drive\.google\.com|docs\.google\.com/.test(url)&&(m=url.match(/[?&]id=([a-zA-Z0-9_-]+)/)))return m[1];
   return null;
 }
 // Transforms a URL into the right form for a given use case.
@@ -1169,8 +1162,7 @@ let currentPage="home";
 function navigate(id){currentPage=id;history.pushState(null,"","#"+id);document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));const pg=document.getElementById("pg-"+id);if(pg)pg.classList.add("active");document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("active",a.dataset.nav===id));window.scrollTo({top:0,behavior:"instant"});closeSidebar();updateHeader();updateSidebarActive();if(id!=="photos")stopGal();if(id!=="home"){clearInterval(cdTimer);GV_CANVAS.stop()}if(id==="photos")startGal();if(id==="home"){startCountdown();GV_CANVAS.start()}}
 function toggleSidebar(){document.getElementById("sidebarOverlay").classList.add("open")}
 function closeSidebar(){document.getElementById("sidebarOverlay").classList.remove("open")}
-const NAV_ES={home:"Inicio",meeting:"Reunión",events:"Eventos",subscribe:"Suscribirse",contribute:"Contribuir",about:"Acerca de GV/LV",gvr:"Rincón del GVR / RLV",documents:"Documentos",photos:"Galería de Eventos",media:"Escuchar y Ver",resources:"Recursos"};
-function renderNav(){document.getElementById("mNav").innerHTML=NAV_SECTIONS.map(s=>{const lbl=_lang==="es"?(NAV_ES[s.id]||s.label):s.label;return `<li><a href="#${s.id}" data-nav="${s.id}" onclick="navigate('${s.id}');return false;" class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-slate-700 font-medium text-[.95rem] no-underline transition-all hover:text-brand-600 hover:bg-brand-50 mb-0.5 min-h-[44px]"><i class="bi ${s.icon} w-5 text-center text-base"></i> ${lbl}</a></li>`}).join("");updateSidebarActive()}
+function renderNav(){document.getElementById("mNav").innerHTML=NAV_SECTIONS.map(s=>{const lbl=_lang==="es"?s.label_es:s.label;return `<li><a href="#${s.id}" data-nav="${s.id}" onclick="navigate('${s.id}');return false;" class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-slate-700 font-medium text-[.95rem] no-underline transition-all hover:text-brand-600 hover:bg-brand-50 mb-0.5 min-h-[44px]"><i class="bi ${s.icon} w-5 text-center text-base"></i> ${lbl}</a></li>`}).join("");updateSidebarActive()}
 function updateSidebarActive(){document.querySelectorAll(".sidebar-nav-item").forEach(a=>a.classList.toggle("active",a.dataset.nav===currentPage))}
 function handleHash(){const h=(location.hash||"#home").slice(1);const valid=NAV_SECTIONS.find(s=>s.id===h);const id=valid?h:"home";currentPage=id;document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));const pg=document.getElementById("pg-"+id);if(pg)pg.classList.add("active");document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("active",a.dataset.nav===id));window.scrollTo({top:0,behavior:"instant"});closeSidebar();if(id!=="photos")stopGal();if(id!=="home"){clearInterval(cdTimer);GV_CANVAS.stop()}if(id==="photos")startGal();if(id==="home"){startCountdown();GV_CANVAS.start()}setTimeout(()=>{updateHeader();updateSidebarActive()},10)}
 window.addEventListener("hashchange",handleHash);
@@ -1178,7 +1170,7 @@ window.addEventListener("popstate",handleHash);
 
 // Tab switcher & modal
 function sTab(g,tab,btn){const p=btn.closest('.page')||btn.parentElement.parentElement;p.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active','!bg-white','!text-brand-600','!shadow-sm','!font-semibold'));btn.classList.add('active','!bg-white','!text-brand-600','!shadow-sm','!font-semibold');p.querySelectorAll('.tpanel').forEach(x=>x.classList.remove('active'));document.getElementById(g+'-'+tab).classList.add('active')}
-function showEv(date,title){const ev=EVENTS.find(e=>e.date===date&&e.title===title);if(!ev)return;const evTitle=_lang==="es"&&ev.title_es?ev.title_es:ev.title;const evDesc=_lang==="es"&&ev.description_es?ev.description_es:ev.description;document.getElementById("evMT").textContent=evTitle;document.getElementById("evMB").innerHTML=`<div class="flex items-start gap-3 mb-3"><div class="w-8 h-8 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center text-sm shrink-0"><i class="bi bi-calendar3"></i></div><div><div class="text-xs font-semibold uppercase tracking-wide text-slate-500">${t("Date","Fecha")}</div><div class="text-sm">${fd(ev.date)}</div></div></div><div class="flex items-start gap-3 mb-3"><div class="w-8 h-8 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center text-sm shrink-0"><i class="bi bi-geo-alt"></i></div><div><div class="text-xs font-semibold uppercase tracking-wide text-slate-500">${t("Location","Ubicación")}</div><div class="text-sm">${ev.location}</div></div></div><p class="mt-3 text-sm text-slate-600">${evDesc}</p>`;const fb=document.getElementById("evMF");if(ev.flyerFile){fb.href=fp("flyers",ev.flyerFile);fb.style.display=""}else{fb.style.display="none"}const shareBtn=document.getElementById("evMS");shareBtn.onclick=()=>shareText(ev.title,ev.title+"\n"+fd(ev.date)+" — "+ev.location+"\n"+ev.description+"\n\nGV/LV Committee, NETA 65");document.getElementById("evMC").onclick=()=>addToCal(ev.date,ev.title,ev.location,ev.description);document.getElementById("evModal").classList.add("open")}
+function showEv(date,title){const ev=EVENTS.find(e=>e.date===date&&e.title===title);if(!ev)return;const evTitle=_lang==="es"&&ev.title_es?ev.title_es:ev.title;const evDesc=_lang==="es"&&ev.description_es?ev.description_es:ev.description;document.getElementById("evMT").textContent=evTitle;document.getElementById("evMB").innerHTML=`<div class="flex items-start gap-3 mb-3"><div class="w-8 h-8 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center text-sm shrink-0"><i class="bi bi-calendar3"></i></div><div><div class="text-xs font-semibold uppercase tracking-wide text-slate-500">${t("Date","Fecha")}</div><div class="text-sm">${fd(ev.date)}</div></div></div><div class="flex items-start gap-3 mb-3"><div class="w-8 h-8 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center text-sm shrink-0"><i class="bi bi-geo-alt"></i></div><div><div class="text-xs font-semibold uppercase tracking-wide text-slate-500">${t("Location","Ubicación")}</div><div class="text-sm">${ev.location}</div></div></div><p class="mt-3 text-sm text-slate-600">${evDesc}</p>`;const fb=document.getElementById("evMF");if(ev.flyerFile){const flyerPath=fp("flyers",ev.flyerFile);fb.href=driveFileId(flyerPath)?driveUrl(flyerPath,"view"):flyerPath;fb.style.display=""}else{fb.style.display="none"}const shareBtn=document.getElementById("evMS");shareBtn.onclick=()=>shareText(ev.title,ev.title+"\n"+fd(ev.date)+" — "+ev.location+"\n"+ev.description+"\n\nGV/LV Committee, NETA 65");document.getElementById("evMC").onclick=()=>addToCal(ev.date,ev.title,ev.location,ev.description);document.getElementById("evModal").classList.add("open")}
 function closeModal(){document.getElementById("evModal").classList.remove("open")}
 
 // Add to Calendar — generates .ics file download
@@ -1232,10 +1224,10 @@ function closePdf(){
 
 // Gallery
 let si=0,galTimer=null;
-function gm(d){si=(si+d+BOOTH_PHOTOS.length)%BOOTH_PHOTOS.length;gu();clearInterval(galTimer);startGal()}
-function gg(i){si=i;gu();clearInterval(galTimer);startGal()}
-function gu(){document.getElementById("gt").style.transform=`translateX(-${si*100}%)`;document.querySelectorAll(".gal-dot-wrap").forEach((d,i)=>d.classList.toggle("active",i===si));const gc=document.getElementById("gc");if(gc)gc.textContent=si+1}
-function startGal(){clearInterval(galTimer);galTimer=setInterval(()=>{si=(si+1)%BOOTH_PHOTOS.length;gu()},5000)}
+function gm(d){if(!BOOTH_PHOTOS.length)return;si=(si+d+BOOTH_PHOTOS.length)%BOOTH_PHOTOS.length;gu();clearInterval(galTimer);startGal()}
+function gg(i){if(!BOOTH_PHOTOS.length)return;si=i;gu();clearInterval(galTimer);startGal()}
+function gu(){const gt=document.getElementById("gt");if(!gt||!BOOTH_PHOTOS.length)return;gt.style.transform=`translateX(-${si*100}%)`;document.querySelectorAll(".gal-dot-wrap").forEach((d,i)=>d.classList.toggle("active",i===si));const gc=document.getElementById("gc");if(gc)gc.textContent=si+1}
+function startGal(){clearInterval(galTimer);if(!BOOTH_PHOTOS.length)return;galTimer=setInterval(()=>{si=(si+1)%BOOTH_PHOTOS.length;gu()},5000)}
 function stopGal(){clearInterval(galTimer);galTimer=null}
 
 // Countdown
@@ -1250,6 +1242,8 @@ function showAllAnn(){const sec=document.querySelector("#pg-home .home-ann-wrap"
 function annCard(a){const aTitle=_lang==="es"&&a.title_es?a.title_es:a.title;const aBody=_lang==="es"&&a.body_es?a.body_es:a.body;const safeTitle=aTitle.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");const plainBody=aBody.replace(/<[^>]*>/g,'').replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");return `<div class="bg-white border border-slate-200 rounded-xl p-5 mb-3 relative pl-7 card-lift hover:border-brand-100 before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-brand-600 before:rounded-l-xl"><div class="flex justify-between items-start flex-wrap gap-2"><div class="font-semibold text-slate-900">${aTitle}</div><span class="text-[.7rem] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full inline-flex items-center gap-1"><i class="bi bi-clock"></i> ${rd(a.date)}</span></div><p class="text-sm text-slate-600 mt-1.5">${aBody}</p><button type="button" class="ann-share mt-2 inline-flex items-center gap-1 text-[.72rem] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 hover:bg-brand-50 hover:text-brand-600 transition-colors border-none cursor-pointer" data-share-title="${safeTitle}" data-share-body="${plainBody}"><i class="bi bi-share"></i> ${t("Share","Compartir")}</button></div>`}
 // Delegated click handler for announcement share buttons — safe from quote issues
 document.addEventListener("click",function(e){const btn=e.target.closest(".ann-share");if(!btn)return;const title=btn.dataset.shareTitle;const body=btn.dataset.shareBody;shareText(title,title+"\n"+body+"\n\nGV/LV Committee, NETA 65")})
+// Delegated click handler for script copy buttons — safe from quote/injection issues
+document.addEventListener("click",function(e){const btn=e.target.closest(".script-copy");if(!btn)return;copyText(btn.dataset.copy,btn)})
 // Delegated handlers for event cards — safe from quote escaping issues
 document.addEventListener("click",function(e){const share=e.target.closest(".ev-share");if(share){e.stopPropagation();const d=share.dataset;shareText(d.evtitle,d.evtitle+"\n"+fd(d.evdate)+" — "+d.evloc+"\n"+d.evdesc+"\n\nGV/LV Committee, NETA 65");return}const card=e.target.closest(".ev-card");if(!card)return;showEv(card.dataset.evdate,card.dataset.evtitle)})
 
@@ -1560,7 +1554,7 @@ function renderGVR(){
   let faqHtml='';FAQ_DATA.forEach((f,i)=>{faqHtml+=`<details class="bg-white border border-slate-200 rounded-xl overflow-hidden card-lift hover:border-brand-100 group"><summary class="flex items-center gap-3 px-5 py-4 cursor-pointer select-none font-semibold text-slate-900 text-sm list-none [&::-webkit-details-marker]:hidden"><i class="bi bi-plus-circle text-brand-600 text-base shrink-0 group-open:hidden"></i><i class="bi bi-dash-circle text-brand-600 text-base shrink-0 hidden group-open:inline"></i> ${tx(f,"question")}</summary><div class="px-5 pb-4 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">${tx(f,"answer")}</div></details>`});
   document.getElementById("gvrFaq").innerHTML=faqHtml;
   // Sample scripts — driven from CSV
-  let scriptHtml='';SCRIPTS_DATA.forEach(s=>{const langAttr=s.lang?` lang="${s.lang}"`:"";const sTitle=tx(s,"title");const sBody=tx(s,"body");scriptHtml+=`<div class="bg-white border border-slate-200 rounded-xl p-5 card-lift hover:border-brand-100"${langAttr}><div class="flex items-center gap-2 mb-3"><i class="bi ${s.icon} text-green-600"></i><h4 class="font-bold text-slate-900 text-sm">${sTitle}</h4></div><div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-700 leading-relaxed italic">"${sBody}"</div><button type="button" onclick="copyText(\`${sBody.replace(/`/g,"\\`")}\`,this)" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-brand-50 text-slate-600 hover:text-brand-600 rounded-lg text-xs font-semibold transition-colors border-none cursor-pointer"><i class="bi bi-clipboard"></i> ${t("Copy to Clipboard","Copiar al Portapapeles")}</button></div>`});
+  let scriptHtml='';SCRIPTS_DATA.forEach(s=>{const langAttr=s.lang?` lang="${s.lang}"`:"";const sTitle=tx(s,"title");const sBody=tx(s,"body");const safeBody=sBody.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");scriptHtml+=`<div class="bg-white border border-slate-200 rounded-xl p-5 card-lift hover:border-brand-100"${langAttr}><div class="flex items-center gap-2 mb-3"><i class="bi ${s.icon} text-green-600"></i><h4 class="font-bold text-slate-900 text-sm">${sTitle}</h4></div><div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-700 leading-relaxed italic">"${sBody}"</div><button type="button" class="script-copy mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-brand-50 text-slate-600 hover:text-brand-600 rounded-lg text-xs font-semibold transition-colors border-none cursor-pointer" data-copy="${safeBody}"><i class="bi bi-clipboard"></i> ${t("Copy to Clipboard","Copiar al Portapapeles")}</button></div>`});
   document.getElementById("gvrScripts").innerHTML=scriptHtml}
 
 // ===== SUBSCRIBE PAGE =====
@@ -1768,7 +1762,7 @@ function renderPhotos(){
     <div class="gal-track flex" id="gt">`;
   // Drive sharing links must go through driveUrl(...,"image") so they load
   // via Drive's thumbnail endpoint (the bare /file/d/.../view URL is HTML, not an image).
-  BOOTH_PHOTOS.forEach(p=>{const cap=_lang==="es"&&p.caption_es?p.caption_es:p.caption;const imgSrc=driveUrl(fp("photos",p.filename),"image");h+=`<div class="min-w-full aspect-video relative"><img src="${imgSrc}" alt="${cap}" loading="lazy" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/900x506/1e293b/94a3b8?text=${encodeURIComponent(cap)}'"><div class="absolute bottom-0 w-full px-5 pb-4 pt-10 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-medium">${cap}</div></div>`});
+  BOOTH_PHOTOS.forEach(p=>{const cap=_lang==="es"&&p.caption_es?p.caption_es:p.caption;const safeCap=cap.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");const imgSrc=driveUrl(fp("photos",p.filename),"image");h+=`<div class="min-w-full aspect-video relative"><img src="${imgSrc}" alt="${safeCap}" loading="lazy" class="w-full h-full object-cover" onerror="if(!this.dataset.errored){this.dataset.errored='1';this.src='https://placehold.co/900x506/1e293b/94a3b8?text=${encodeURIComponent(cap)}'}"><div class="absolute bottom-0 w-full px-5 pb-4 pt-10 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-medium">${cap}</div></div>`});
   h+=`</div>
     <button type="button" class="absolute top-1/2 left-2 sm:left-3 -translate-y-1/2 bg-white/15 backdrop-blur-md text-white border border-white/20 w-11 h-11 rounded-full text-lg cursor-pointer z-[2] flex items-center justify-center hover:bg-white/30 transition-all" onclick="gm(-1)" aria-label="${t("Previous","Anterior")}"><i class="bi bi-chevron-left"></i></button>
     <button type="button" class="absolute top-1/2 right-2 sm:right-3 -translate-y-1/2 bg-white/15 backdrop-blur-md text-white border border-white/20 w-11 h-11 rounded-full text-lg cursor-pointer z-[2] flex items-center justify-center hover:bg-white/30 transition-all" onclick="gm(1)" aria-label="${t("Next","Siguiente")}"><i class="bi bi-chevron-right"></i></button>
@@ -1820,7 +1814,7 @@ function renderMedia(){
   if(rVids.length>12){h+=`<div class="text-center mt-4"><button type="button" id="loadMoreVids" onclick="document.getElementById('moreVids').style.display='grid';this.style.display='none'" class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold transition-colors border-none cursor-pointer"><i class="bi bi-plus-circle"></i> ${t("Show More Videos","Mostrar Más Videos")} (${rVids.length-12} ${t("more","más")})</button></div><div id="moreVids" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4" style="display:none">`; rVids.slice(12).forEach(v=>{h+=vidCard(v)});h+=`</div>`}
   h+=`<div class="text-center mt-4"><a href="${YOUTUBE_CHANNEL_URL}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium border border-slate-200 transition-colors no-underline"><i class="bi bi-youtube"></i> ${t("AA Grapevine YouTube Channel","Canal de YouTube de AA Grapevine")}</a></div></div>
     <div class="tpanel" id="med-ig"><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">`;
-  [...INSTAGRAM_POSTS].sort(()=>Math.random()-.5).slice(0,6).forEach(code=>{h+=`<div class="bg-white border border-slate-200 rounded-xl overflow-hidden card-lift hover:border-brand-100"><iframe src="https://www.instagram.com/p/${code}/embed" loading="lazy" title="Instagram post" class="w-full border-none min-h-[600px]"></iframe></div>`});
+  [...INSTAGRAM_POSTS].sort(()=>Math.random()-.5).slice(0,6).forEach(code=>{h+=`<div class="bg-white border border-slate-200 rounded-xl overflow-hidden card-lift hover:border-brand-100"><iframe src="https://www.instagram.com/p/${code}/embed" loading="lazy" title="Instagram post" class="w-full border-none min-h-[420px] sm:min-h-[600px]"></iframe></div>`});
   h+=`</div><div class="flex flex-wrap justify-center gap-3 mt-4"><a href="${INSTAGRAM_GV_URL}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium border border-slate-200 transition-colors no-underline"><i class="bi bi-instagram"></i> ${t("Follow","Seguir")} ${INSTAGRAM_GV_HANDLE}</a><a href="${INSTAGRAM_LV_URL}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-sm font-medium border border-amber-200 transition-colors no-underline"><i class="bi bi-instagram"></i> ${t("Follow","Seguir")} ${INSTAGRAM_LV_HANDLE}</a></div></div>
   </div></div>`;document.getElementById("pg-media").innerHTML=h}
 
@@ -1920,16 +1914,18 @@ function updateHeader(){const hdr=document.getElementById("hdr");if(window.scrol
 window.addEventListener("scroll",()=>{btt.classList.toggle("visible",window.scrollY>400);updateHeader()});
 btt.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"}));
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeSidebar();closeModal();closePdf()}});
-// Intercept PDF link clicks on GVR page — open inline instead of external
+// Intercept document link clicks on GVR and Documents pages — open inline viewer
+// instead of external tab. Handles local PDFs, images, AND Google Drive URLs.
 // Uses delegated handler on document so it survives innerHTML rebuilds (language toggle)
 document.addEventListener("click",function(e){
-  const link=e.target.closest("#pg-gvr a[href]");
+  const link=e.target.closest("#pg-gvr a[href], #pg-documents a[href]");
   if(!link)return;
   const href=link.getAttribute("href");
-  if(!href)return;
+  if(!href||href==="#")return;
   const isPdf=/\.(pdf|PDF)(\?.*)?$/.test(href);
   const isImg=/\.(jpe?g|JPE?G|png|PNG)(\?.*)?$/.test(href);
-  if(isPdf||isImg){
+  const isDrive=!!driveFileId(href)&&/drive\.google\.com|docs\.google\.com/.test(href);
+  if(isPdf||isImg||isDrive){
     e.preventDefault();
     const h6=link.querySelector("h6");const title=(h6?h6.textContent:"")||link.textContent.trim()||t("Document","Documento");
     showPdf(href,title);
