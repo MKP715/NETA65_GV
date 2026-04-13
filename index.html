@@ -9,6 +9,7 @@
   <link rel="icon" type="image/png" href="assets/images/logo-32x32.png" sizes="32x32">
   <link rel="icon" type="image/png" href="assets/images/logo-192x192.png" sizes="192x192">
   <link rel="apple-touch-icon" href="assets/images/logo-180x180.png">
+  <meta name="theme-color" content="#025a94">
   <meta property="og:title" content="Grapevine / La Viña — NETA 65">
   <meta property="og:description" content="Northeast Texas Area 65 Grapevine and La Viña Committee — resources for GVRs, RLVs, districts, and groups.">
   <meta property="og:image" content="assets/images/logo-192x192.png">
@@ -101,6 +102,8 @@
     .hdr-transparent .hdr-menu-btn:hover{background:rgba(255,255,255,.1)!important}    .hdr-solid{background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-color:rgba(226,232,240,.8)}
     .hero-mesh::before{content:'';position:absolute;top:-40%;right:-15%;width:500px;height:500px;background:radial-gradient(circle,rgba(255,255,255,.08) 0%,transparent 70%);border-radius:50%}
     .hero-mesh::after{content:'';position:absolute;bottom:-30%;left:-10%;width:400px;height:400px;background:radial-gradient(circle,rgba(59,154,232,.15) 0%,transparent 70%);border-radius:50%}
+    #grapevineCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+    .hero-mesh{position:relative}
     .card-lift{transition:all .25s cubic-bezier(.4,0,.2,1)}
     .card-lift:hover{transform:translateY(-4px);box-shadow:0 12px 24px -6px rgba(0,0,0,.1)}
     .dash-card-icon{transition:transform .25s}.dash-card:hover .dash-card-icon{transform:scale(1.15) rotate(-3deg)}
@@ -274,6 +277,33 @@ const MEETING_INFO = {
 };
 // GV Weekly Open Meeting info (used on About & Media pages) — update here when it changes
 const WEEKLY_OPEN = { zoomId:"871 2036 8287", passcode:"238047", day:"Wednesdays", time:"11 AM Central" };
+
+/* ── AA Preamble ────────────────────────────────────────────────
+   Reprinted with permission from The AA Grapevine, Inc.
+   The Preamble originated in the June 1947 issue of the Grapevine.
+   Revised by the 2021 General Service Conference.
+   ────────────────────────────────────────────────────────────── */
+const AA_PREAMBLE = {
+  en: "Alcoholics Anonymous is a fellowship of people who share their experience, strength and hope with each other that they may solve their common problem and help others to recover from alcoholism. The only requirement for membership is a desire to stop drinking. There are no dues or fees for AA membership; we are self-supporting through our own contributions. AA is not allied with any sect, denomination, politics, organization or institution; does not wish to engage in any controversy; neither endorses nor opposes any causes. Our primary purpose is to stay sober and help other alcoholics to achieve sobriety.",
+  es: "Alcohólicos Anónimos es una comunidad de personas que comparten su experiencia, fortaleza y esperanza entre sí para resolver su problema común y ayudar a otros a recuperarse del alcoholismo. El único requisito para ser miembro de AA es el deseo de dejar la bebida. Para ser miembro de AA no se pagan honorarios ni cuotas; nos mantenemos con nuestras propias contribuciones. AA no está afiliada a ninguna secta, religión, partido político, organización o institución alguna; no desea intervenir en controversias; no respalda ni se opone a ninguna causa. Nuestro objetivo primordial es mantenernos sobrios y ayudar a otros alcohólicos a alcanzar el estado de sobriedad.",
+  copyright: "Copyright \u00A9 The AA Grapevine, Inc. AA Preamble reprinted with permission. All rights reserved.",
+  copyright_es: "Copyright \u00A9 The AA Grapevine, Inc. Pre\u00E1mbulo de AA reimpreso con permiso. Todos los derechos reservados.",
+};
+
+/* ── Traditions Checklist ───────────────────────────────────────
+   Links to the official Traditions Checklist PDFs (English & Spanish).
+   Originally published in the Grapevine — reprinted with permission.
+   ────────────────────────────────────────────────────────────── */
+const TRADITIONS_CHECKLIST = {
+  en_url: "https://www.aagrapevine.org/sites/default/files/2020-01/GV-Traditions-Checklist-2018.pdf",
+  es_url: "https://www.aalavina.org/sites/default/files/2020-08/un%20chequeo%20de%20las%20tradiciones_.pdf",
+  title: "The Twelve Traditions Checklist",
+  title_es: "Chequeo de las Doce Tradiciones",
+  description: "A personal inventory of how well your group practices each Tradition \u2014 originally published in the Grapevine. A powerful tool for group health and unity.",
+  description_es: "Un inventario personal de qu\u00E9 tan bien su grupo practica cada Tradici\u00F3n \u2014 originalmente publicado en el Grapevine. Una herramienta poderosa para la salud y unidad del grupo.",
+  copyright: "Copyright \u00A9 The AA Grapevine, Inc. Reprinted with permission. All rights reserved.",
+  copyright_es: "Copyright \u00A9 The AA Grapevine, Inc. Reimpreso con permiso. Todos los derechos reservados.",
+};
 
 // Auto-calculate the Nth weekday of a month (weekday: 0=Sun..6=Sat, n: 1=first, 2=second, 3=third...)
 function getNthWeekday(year,month,weekday,n){const first=new Date(year,month,1);let d=((weekday-first.getDay()+7)%7)+1;d+=(n-1)*7;return new Date(year,month,d)}
@@ -554,19 +584,19 @@ const YOUTUBE_VIDEOS = [
   { id:"b9f_3EgBTz4", title:"Leila — 'AA's program of action was modern day alchemy'" },
   { id:"UgO2ERM3ysc", title:"Sky — 'I grew up in A.A.'" },
   // — La Viña (Spanish) —
-  { id:"Bqb1FP0lx1E", title:"La Viña: Su historia y el impacto en la Comunidad Hispana de AA" },
-  { id:"wV_9uHDCUow", title:"Como participar en el servicio de RLV" },
-  { id:"svtBcJVfXs0", title:"Camila — 'Mi refugio'" },
-  { id:"eVKc9Ja6QuU", title:"Marisol — 'El mejor año de mi vida'" },
-  { id:"R1mQ5TkHoTU", title:"Eloy E. — 'De la oscuridad a la luz'" },
-  { id:"sG8JuBn_t2Y", title:"Karina — 'Un mundo de posibilidades'" },
-  { id:"vSBGoZEqI2Y", title:"José C. — 'Mi infancia, mi alcoholismo y mi recuperación'" },
-  { id:"1ntnf2eHRoI", title:"Maria R — 'El lenguaje del corazón'" },
-  { id:"eqYo0I45axM", title:"Vicky — 'Mi nueva versión'" },
-  { id:"k1J3bteSIfU", title:"Magdalena P. — 'El valor de servir'" },
+  { id:"Bqb1FP0lx1E", title:"La Viña: Su historia y el impacto en la Comunidad Hispana de AA", lang:"es" },
+  { id:"wV_9uHDCUow", title:"Como participar en el servicio de RLV", lang:"es" },
+  { id:"svtBcJVfXs0", title:"Camila — 'Mi refugio'", lang:"es" },
+  { id:"eVKc9Ja6QuU", title:"Marisol — 'El mejor año de mi vida'", lang:"es" },
+  { id:"R1mQ5TkHoTU", title:"Eloy E. — 'De la oscuridad a la luz'", lang:"es" },
+  { id:"sG8JuBn_t2Y", title:"Karina — 'Un mundo de posibilidades'", lang:"es" },
+  { id:"vSBGoZEqI2Y", title:"José C. — 'Mi infancia, mi alcoholismo y mi recuperación'", lang:"es" },
+  { id:"1ntnf2eHRoI", title:"Maria R — 'El lenguaje del corazón'", lang:"es" },
+  { id:"eqYo0I45axM", title:"Vicky — 'Mi nueva versión'", lang:"es" },
+  { id:"k1J3bteSIfU", title:"Magdalena P. — 'El valor de servir'", lang:"es" },
   // — Informational —
   { id:"V55DUDvlsCQ", title:"CARRY THE MESSAGE PROJECT — AA Grapevine & La Viña" },
-  { id:"4qb3ok1xiF4", title:"PROYECTO LLEVE EL MENSAJE — AA Grapevine & La Viña" },
+  { id:"4qb3ok1xiF4", title:"PROYECTO LLEVE EL MENSAJE — AA Grapevine & La Viña", lang:"es" },
   { id:"A9_01Vqt4LQ", title:"How to Succeed as a Grapevine Rep" },
   { id:"ScN9KChAsKs", title:"The 2025 International Convention, Vancouver" },
   { id:"4tXWts3Dzxc", title:"Twelve Steps Save a Life" },
@@ -874,7 +904,7 @@ function isF(s){return new Date(s+"T23:59:59")>=new Date()}
 function rd(s){const d=new Date(s+"T00:00:00"),n=new Date(),df=Math.ceil((d-n)/864e5);if(df===0)return t("Today","Hoy");if(df===1)return t("Tomorrow","Mañana");if(df>0&&df<=7)return t("In "+df+" days","En "+df+" días");return fd(s)}
 
 // Shared YouTube video card renderer — uses data attributes to avoid quote-escaping issues
-function vidCard(v){const safeTitle=v.title.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/'/g,"&#39;").replace(/</g,"&lt;");return `<div class="bg-white border border-slate-200 rounded-xl overflow-hidden card-lift hover:border-brand-100 cursor-pointer group yt-card" role="button" tabindex="0" aria-label="Play: ${safeTitle}" data-ytid="${v.id}" data-yttitle="${safeTitle}" onkeydown="if(event.key==='Enter')this.click()"><div class="yt-thumb relative aspect-video bg-slate-900 overflow-hidden"><img src="https://img.youtube.com/vi/${v.id}/hqdefault.jpg" alt="${safeTitle}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"><div class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/15 transition-colors"><i class="bi bi-play-circle-fill text-5xl text-white drop-shadow-lg"></i></div></div><div class="p-3"><h6 class="text-sm font-semibold text-slate-900">${v.title}</h6></div></div>`}
+function vidCard(v){const safeTitle=v.title.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/'/g,"&#39;").replace(/</g,"&lt;");const langAttr=v.lang?` lang="${v.lang}"`:"";return `<div class="bg-white border border-slate-200 rounded-xl overflow-hidden card-lift hover:border-brand-100 cursor-pointer group yt-card"${langAttr} role="button" tabindex="0" aria-label="Play: ${safeTitle}" data-ytid="${v.id}" data-yttitle="${safeTitle}" onkeydown="if(event.key==='Enter')this.click()"><div class="yt-thumb relative aspect-video bg-slate-900 overflow-hidden"><img src="https://img.youtube.com/vi/${v.id}/hqdefault.jpg" alt="${safeTitle}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"><div class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/15 transition-colors"><i class="bi bi-play-circle-fill text-5xl text-white drop-shadow-lg"></i></div></div><div class="p-3"><h6 class="text-sm font-semibold text-slate-900">${v.title}</h6></div></div>`}
 // Delegated click handler for YouTube cards — safe from quote issues
 document.addEventListener("click",function(e){const card=e.target.closest(".yt-card");if(!card)return;const id=card.dataset.ytid;const title=card.dataset.yttitle;if(!id)return;const thumb=card.querySelector(".yt-thumb");if(!thumb)return;thumb.innerHTML='<iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1&rel=0" title="'+title+'" style="position:absolute;inset:0;width:100%;height:100%" allow="autoplay;encrypted-media" allowfullscreen></iframe>'})
 
@@ -885,15 +915,497 @@ function copyText(text,btn){navigator.clipboard.writeText(text).then(()=>{const 
 function shareText(title,text){if(navigator.share){navigator.share({title:title,text:text}).catch(()=>{})}else{navigator.clipboard.writeText(text).then(()=>{showToast(t("Copied to clipboard — paste in your message!","¡Copiado al portapapeles — pega en tu mensaje!"))}).catch(()=>{prompt("Copy this to share:",text)})}}
 function showToast(msg){let el=document.getElementById("toast");if(!el){el=document.createElement("div");el.id="toast";el.className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-xl z-[1100] transition-all duration-300 opacity-0 translate-y-2";document.body.appendChild(el)}el.textContent=msg;el.classList.remove("opacity-0","translate-y-2");el.classList.add("opacity-100","translate-y-0");setTimeout(()=>{el.classList.add("opacity-0","translate-y-2");el.classList.remove("opacity-100","translate-y-0")},2500)}
 
+/* ================================================================
+   GRAPEVINE CANVAS — Botanically-detailed animated grapevines
+   Features: woody branching canes, spiral tendrils, five-lobed
+   palmate leaves with veins, conical grape clusters, string lights,
+   and floating luminous particles. Mouse/touch interactive.
+   ================================================================ */
+const GV_CANVAS = (function(){
+  let cvs,ctx,W,H,raf=null,scene=null,mouseX=-1,mouseY=-1;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const PI=Math.PI, TAU=PI*2;
+  function rnd(a,b){return Math.random()*(b-a)+a}
+  function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+  function lerp(a,b,t){return a+(b-a)*t}
+  function dist(x1,y1,x2,y2){const dx=x1-x2,dy=y1-y2;return Math.sqrt(dx*dx+dy*dy)}
+  // ── Bezier helpers ──
+  function bezPt(p0,p1,p2,p3,t){
+    const u=1-t;
+    return{x:u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x,
+           y:u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y}
+  }
+  function bezTan(p0,p1,p2,p3,t){
+    const u=1-t;
+    return{x:3*u*u*(p1.x-p0.x)+6*u*t*(p2.x-p1.x)+3*t*t*(p3.x-p2.x),
+           y:3*u*u*(p1.y-p0.y)+6*u*t*(p2.y-p1.y)+3*t*t*(p3.y-p2.y)}
+  }
+  // ── Light colors ──
+  const LCOL=[
+    {r:255,g:220,b:90},{r:255,g:190,b:60},{r:255,g:160,b:50},  // golds
+    {r:190,g:140,b:255},{r:160,g:110,b:240},                     // purples
+    {r:110,g:210,b:255},{r:80,g:180,b:240},                      // blues
+    {r:255,g:150,b:190},{r:255,g:120,b:160},                     // pinks
+    {r:130,g:235,b:180},{r:100,g:220,b:160},                     // mints
+    {r:255,g:200,b:120},{r:220,g:180,b:255},{r:120,g:255,b:230}, // amber/lavender/aqua
+  ];
+  // ── Draw a thick organic vine segment with bark texture ──
+  function drawCane(seg,baseW,opacity,time){
+    // Main cane — draw multiple strokes for organic woody look
+    const steps=60;
+    for(let pass=0;pass<3;pass++){
+      const w=baseW*(pass===0?1:pass===1?0.7:0.4);
+      const a=opacity*(pass===0?1:pass===1?0.6:0.3);
+      ctx.strokeStyle=pass===0?`rgba(160,130,100,${a})`
+                     :pass===1?`rgba(120,95,70,${a})`
+                     :`rgba(200,170,130,${a})`;
+      ctx.lineWidth=w;
+      ctx.lineCap="round";ctx.lineJoin="round";
+      ctx.beginPath();
+      for(let i=0;i<=steps;i++){
+        const t=i/steps;
+        const pt=bezPt(seg.p0,seg.p1,seg.p2,seg.p3,t);
+        // Add slight organic wobble to inner passes
+        const wobble=pass>0?Math.sin(t*12+seg.p0.x*0.03)*w*0.3:0;
+        if(i===0)ctx.moveTo(pt.x+wobble,pt.y+wobble);
+        else ctx.lineTo(pt.x+wobble,pt.y+wobble);
+      }
+      ctx.stroke();
+    }
+    // Bark knots — small bumps along the cane
+    const knotCount=Math.floor(rnd(1,4));
+    for(let k=0;k<knotCount;k++){
+      const kt=rnd(0.15,0.85);
+      const kp=bezPt(seg.p0,seg.p1,seg.p2,seg.p3,kt);
+      const kr=baseW*rnd(0.5,0.9);
+      ctx.fillStyle=`rgba(100,75,50,${opacity*0.4})`;
+      ctx.beginPath();
+      ctx.ellipse(kp.x,kp.y,kr,kr*0.6,rnd(0,PI),0,TAU);
+      ctx.fill();
+    }
+  }
+  // ── Draw a spiral tendril ──
+  function drawTendril(x,y,angle,length,curlDir,opacity,time){
+    const sway=reducedMotion?0:Math.sin(time*0.7+x*0.02)*0.08;
+    ctx.strokeStyle=`rgba(140,180,100,${opacity*0.5})`;
+    ctx.lineWidth=1.2;
+    ctx.lineCap="round";
+    ctx.beginPath();
+    const spirals=rnd(2.5,4);
+    const steps=50;
+    // Straight stem portion
+    const stemLen=length*0.3;
+    const stemEndX=x+Math.cos(angle+sway)*stemLen;
+    const stemEndY=y+Math.sin(angle+sway)*stemLen;
+    ctx.moveTo(x,y);
+    ctx.lineTo(stemEndX,stemEndY);
+    // Spiral portion
+    let cx=stemEndX,cy=stemEndY;
+    let curAngle=angle+sway;
+    const curlSpeed=spirals*TAU/steps;
+    let radius=length*0.2;
+    for(let i=0;i<steps;i++){
+      curAngle+=curlDir*curlSpeed;
+      radius*=0.97; // spiral tightens
+      cx+=Math.cos(curAngle)*radius*0.12;
+      cy+=Math.sin(curAngle)*radius*0.12;
+      ctx.lineTo(cx,cy);
+    }
+    ctx.stroke();
+    // Thin second tendril sometimes
+    if(Math.random()>0.5){
+      ctx.strokeStyle=`rgba(140,180,100,${opacity*0.3})`;
+      ctx.lineWidth=0.7;
+      ctx.beginPath();
+      ctx.moveTo(stemEndX,stemEndY);
+      let cx2=stemEndX,cy2=stemEndY,r2=length*0.13;
+      let a2=angle+sway+PI*0.3*curlDir;
+      for(let i=0;i<30;i++){
+        a2-=curlDir*curlSpeed*1.2;r2*=0.96;
+        cx2+=Math.cos(a2)*r2*0.1;cy2+=Math.sin(a2)*r2*0.1;
+        ctx.lineTo(cx2,cy2);
+      }
+      ctx.stroke();
+    }
+  }
+  // ── Draw a five-lobed grape leaf with veins ──
+  function drawGrapeLeaf(x,y,size,angle,opacity,time){
+    const sway=reducedMotion?0:Math.sin(time*0.6+y*0.03+x*0.02)*0.1;
+    const a=angle+sway;
+    ctx.save();ctx.translate(x,y);ctx.rotate(a);
+    // Main leaf shape — five lobes
+    const s=size;
+    // Leaf fill with gradient
+    const grad=ctx.createRadialGradient(0,-s*0.1,0,0,-s*0.1,s*1.2);
+    grad.addColorStop(0,`rgba(80,160,80,${opacity*0.35})`);
+    grad.addColorStop(0.5,`rgba(60,130,60,${opacity*0.28})`);
+    grad.addColorStop(1,`rgba(40,100,40,${opacity*0.15})`);
+    ctx.fillStyle=grad;
+    ctx.beginPath();
+    // Petiole (stem)
+    ctx.moveTo(0,s*0.4);
+    // Right side lobes
+    ctx.bezierCurveTo(s*0.05,s*0.2,s*0.15,s*0.1,s*0.35,s*0.15);  // lower right lobe
+    ctx.bezierCurveTo(s*0.45,s*0.05,s*0.3,-s*0.05,s*0.25,-s*0.1);  // sinuate
+    ctx.bezierCurveTo(s*0.5,-s*0.15,s*0.65,-s*0.3,s*0.55,-s*0.5);  // middle right lobe
+    ctx.bezierCurveTo(s*0.45,-s*0.45,s*0.35,-s*0.35,s*0.2,-s*0.4); // sinuate
+    ctx.bezierCurveTo(s*0.25,-s*0.6,s*0.2,-s*0.8,s*0.1,-s*0.9);   // upper right lobe
+    // Top center lobe
+    ctx.bezierCurveTo(s*0.05,-s*1.0,0,-s*1.05,-s*0.05,-s*1.0);
+    ctx.bezierCurveTo(-s*0.1,-s*0.9,-s*0.15,-s*0.8,-s*0.1,-s*0.7);
+    // Left side lobes (mirror)
+    ctx.bezierCurveTo(-s*0.2,-s*0.8,-s*0.25,-s*0.6,-s*0.2,-s*0.4);
+    ctx.bezierCurveTo(-s*0.35,-s*0.35,-s*0.45,-s*0.45,-s*0.55,-s*0.5);
+    ctx.bezierCurveTo(-s*0.65,-s*0.3,-s*0.5,-s*0.15,-s*0.25,-s*0.1);
+    ctx.bezierCurveTo(-s*0.3,-s*0.05,-s*0.45,s*0.05,-s*0.35,s*0.15);
+    ctx.bezierCurveTo(-s*0.15,s*0.1,-s*0.05,s*0.2,0,s*0.4);
+    ctx.closePath();
+    ctx.fill();
+    // Serrated edge
+    ctx.strokeStyle=`rgba(60,120,50,${opacity*0.2})`;
+    ctx.lineWidth=0.6;
+    ctx.stroke();
+    // Main veins — palmate pattern
+    ctx.strokeStyle=`rgba(90,150,70,${opacity*0.25})`;
+    ctx.lineWidth=0.9;
+    // Center vein
+    ctx.beginPath();ctx.moveTo(0,s*0.3);ctx.lineTo(0,-s*0.85);ctx.stroke();
+    // Upper right vein
+    ctx.beginPath();ctx.moveTo(0,s*0.1);
+    ctx.quadraticCurveTo(s*0.15,-s*0.2,s*0.45,-s*0.4);ctx.stroke();
+    // Upper left vein
+    ctx.beginPath();ctx.moveTo(0,s*0.1);
+    ctx.quadraticCurveTo(-s*0.15,-s*0.2,-s*0.45,-s*0.4);ctx.stroke();
+    // Lower right vein
+    ctx.beginPath();ctx.moveTo(0,s*0.2);
+    ctx.quadraticCurveTo(s*0.12,s*0.05,s*0.3,s*0.1);ctx.stroke();
+    // Lower left vein
+    ctx.beginPath();ctx.moveTo(0,s*0.2);
+    ctx.quadraticCurveTo(-s*0.12,s*0.05,-s*0.3,s*0.1);ctx.stroke();
+    // Secondary veins (thin)
+    ctx.strokeStyle=`rgba(90,150,70,${opacity*0.12})`;
+    ctx.lineWidth=0.5;
+    for(let v=0;v<5;v++){
+      const vt=rnd(0.2,0.6);
+      const vAngle=rnd(-1.2,1.2);
+      const vLen=s*rnd(0.15,0.3);
+      const vx=0,vy=s*0.3-s*vt*1.1;
+      ctx.beginPath();ctx.moveTo(vx,vy);
+      ctx.lineTo(vx+Math.cos(vAngle)*vLen,vy+Math.sin(vAngle)*vLen);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  // ── Draw a conical grape cluster hanging down ──
+  function drawGrapeCluster(cx,cy,size,hue,opacity,time){
+    const pulse=reducedMotion?0:Math.sin(time*1.0+cx*0.04)*0.06;
+    const sway=reducedMotion?0:Math.sin(time*0.5+cy*0.02)*2;
+    ctx.save();ctx.translate(cx+sway,cy);
+    // Stem
+    ctx.strokeStyle=`rgba(120,160,80,${opacity*0.5})`;
+    ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(0,-size*0.3);ctx.lineTo(0,0);ctx.stroke();
+    // Small branching stems within cluster
+    ctx.lineWidth=0.7;
+    // Build conical cluster shape — wide at top, narrow at bottom
+    const rows=Math.max(3,Math.floor(size*0.5));
+    const grapeR=size*0.18;
+    const grapes=[];
+    for(let row=0;row<rows;row++){
+      const rowT=row/(rows-1);
+      const count=Math.max(1,Math.round(lerp(rows,1,rowT*rowT)));
+      const rowY=row*grapeR*1.7;
+      const rowW=(count-1)*grapeR*1.8;
+      for(let i=0;i<count;i++){
+        const gx=-rowW/2+i*grapeR*1.8+rnd(-grapeR*0.2,grapeR*0.2);
+        const gy=rowY+rnd(-grapeR*0.15,grapeR*0.15);
+        grapes.push({x:gx,y:gy,r:grapeR+rnd(-0.5,0.5)});
+      }
+    }
+    // Draw each grape
+    grapes.forEach((g,gi)=>{
+      const gPulse=opacity*(0.85+0.15*Math.sin(time*1.2+gi*0.5+pulse));
+      // Shadow
+      ctx.fillStyle=`hsla(${hue},50%,20%,${gPulse*0.2})`;
+      ctx.beginPath();ctx.arc(g.x+1,g.y+1,g.r,0,TAU);ctx.fill();
+      // Main grape body — gradient for 3D look
+      const gGrad=ctx.createRadialGradient(g.x-g.r*0.3,g.y-g.r*0.3,g.r*0.1,g.x,g.y,g.r);
+      gGrad.addColorStop(0,`hsla(${hue},65%,65%,${gPulse*0.55})`);
+      gGrad.addColorStop(0.5,`hsla(${hue},60%,45%,${gPulse*0.5})`);
+      gGrad.addColorStop(1,`hsla(${hue},55%,30%,${gPulse*0.45})`);
+      ctx.fillStyle=gGrad;
+      ctx.beginPath();ctx.arc(g.x,g.y,g.r,0,TAU);ctx.fill();
+      // Highlight/sheen
+      ctx.fillStyle=`hsla(${hue},70%,85%,${gPulse*0.25})`;
+      ctx.beginPath();ctx.arc(g.x-g.r*0.25,g.y-g.r*0.3,g.r*0.35,0,TAU);ctx.fill();
+    });
+    ctx.restore();
+  }
+  // ── Generate sub-branches from a point on the main cane ──
+  function makeBranch(startX,startY,angle,length,depth){
+    const endX=startX+Math.cos(angle)*length;
+    const endY=startY+Math.sin(angle)*length;
+    const cx1=startX+Math.cos(angle)*length*0.33+rnd(-15,15);
+    const cy1=startY+Math.sin(angle)*length*0.33+rnd(-15,15);
+    const cx2=startX+Math.cos(angle)*length*0.66+rnd(-15,15);
+    const cy2=startY+Math.sin(angle)*length*0.66+rnd(-15,15);
+    return{p0:{x:startX,y:startY},p1:{x:cx1,y:cy1},p2:{x:cx2,y:cy2},p3:{x:endX,y:endY},depth:depth};
+  }
+  // ── Build full scene ──
+  function buildScene(){
+    const canes=[],branches=[],tendrils=[],leaves=[],clusters=[],stringLights=[],particles=[];
+    // Determine layout based on screen
+    const isMobile=W<640,isTablet=W<1024;
+    const mainVineCount=isMobile?2:isTablet?3:4;
+    // Generate main vine canes that cross the scene
+    for(let v=0;v<mainVineCount;v++){
+      const fromLeft=v%2===0;
+      const startX=fromLeft?rnd(-60,-10):W+rnd(10,60);
+      const startY=rnd(H*0.05,H*0.9);
+      const dirX=fromLeft?1:-1;
+      const segCount=isMobile?rnd(2,3):rnd(3,5);
+      let cx=startX,cy=startY;
+      const vineSegs=[];
+      for(let s=0;s<segCount;s++){
+        const reach=rnd(W*0.15,W*0.3);
+        const rise=rnd(-H*0.2,H*0.2);
+        const endX=cx+dirX*reach;
+        const endY=Math.max(H*0.05,Math.min(H*0.95,cy+rise));
+        const cp1={x:cx+dirX*reach*rnd(0.2,0.45),y:cy+rnd(-40,40)};
+        const cp2={x:cx+dirX*reach*rnd(0.55,0.8),y:endY+rnd(-40,40)};
+        const seg={p0:{x:cx,y:cy},p1:cp1,p2:cp2,p3:{x:endX,y:endY}};
+        vineSegs.push(seg);
+        const baseWidth=rnd(3,5.5)*(1-s*0.12); // thins toward tip
+        canes.push({seg,width:baseWidth,opacity:rnd(0.25,0.45)});
+        // ── Spawn sub-branches ──
+        const branchCount=Math.floor(rnd(1,3));
+        for(let b=0;b<branchCount;b++){
+          const bt=rnd(0.2,0.8);
+          const bp=bezPt(seg.p0,seg.p1,seg.p2,seg.p3,bt);
+          const tan=bezTan(seg.p0,seg.p1,seg.p2,seg.p3,bt);
+          const bAngle=Math.atan2(tan.y,tan.x)+rnd(-1.2,1.2);
+          const bLen=rnd(40,120)*(isMobile?0.6:1);
+          const branch=makeBranch(bp.x,bp.y,bAngle,bLen,1);
+          branches.push({seg:branch,width:baseWidth*rnd(0.3,0.5),opacity:rnd(0.2,0.35)});
+          // Sub-sub-branches
+          if(!isMobile&&Math.random()>0.4){
+            const sbt=rnd(0.4,0.9);
+            const sbp=bezPt(branch.p0,branch.p1,branch.p2,branch.p3,sbt);
+            const sbAngle=bAngle+rnd(-0.8,0.8);
+            const sbLen=bLen*rnd(0.3,0.6);
+            branches.push({seg:makeBranch(sbp.x,sbp.y,sbAngle,sbLen,2),width:baseWidth*rnd(0.15,0.3),opacity:rnd(0.15,0.25)});
+          }
+        }
+        // ── Tendrils — the iconic spiral coils ──
+        const tendrilCount=Math.floor(rnd(1,3));
+        for(let tr=0;tr<tendrilCount;tr++){
+          const tt=rnd(0.15,0.85);
+          const tp=bezPt(seg.p0,seg.p1,seg.p2,seg.p3,tt);
+          const tan=bezTan(seg.p0,seg.p1,seg.p2,seg.p3,tt);
+          const tAngle=Math.atan2(tan.y,tan.x)+rnd(0.5,1.5)*(Math.random()>0.5?1:-1);
+          tendrils.push({x:tp.x,y:tp.y,angle:tAngle,length:rnd(20,55)*(isMobile?0.7:1),curl:Math.random()>0.5?1:-1,opacity:rnd(0.25,0.45)});
+        }
+        // ── Leaves — five-lobed grape leaves ──
+        const leafCount=Math.floor(rnd(1,4));
+        for(let lf=0;lf<leafCount;lf++){
+          const lt=rnd(0.1,0.9);
+          const lp=bezPt(seg.p0,seg.p1,seg.p2,seg.p3,lt);
+          const tan=bezTan(seg.p0,seg.p1,seg.p2,seg.p3,lt);
+          const lAngle=Math.atan2(tan.y,tan.x)+rnd(-1.5,1.5);
+          const lOff=rnd(5,15)*(Math.random()>0.5?1:-1);
+          leaves.push({
+            x:lp.x+Math.cos(lAngle+PI/2)*lOff,
+            y:lp.y+Math.sin(lAngle+PI/2)*lOff,
+            size:rnd(8,18)*(isMobile?0.75:1),
+            angle:lAngle,
+            opacity:rnd(0.3,0.6),
+            sway:rnd(0,TAU),
+          });
+        }
+        // ── Grape clusters — hang from vine ──
+        if(Math.random()<(isMobile?0.4:0.5)){
+          const gt=rnd(0.25,0.75);
+          const gp=bezPt(seg.p0,seg.p1,seg.p2,seg.p3,gt);
+          clusters.push({
+            x:gp.x+rnd(-8,8),y:gp.y+rnd(8,20),
+            size:rnd(6,12)*(isMobile?0.8:1),
+            hue:pick([260,270,280,290,300,310,240]), // purple-violet range
+            opacity:rnd(0.35,0.6),
+          });
+        }
+        // ── String lights along the cane ──
+        const lightCount=Math.floor(rnd(4,8));
+        for(let li=0;li<lightCount;li++){
+          const lt=rnd(0.05,0.95);
+          const lp=bezPt(seg.p0,seg.p1,seg.p2,seg.p3,lt);
+          // Lights droop slightly below the vine
+          const droop=rnd(2,8);
+          stringLights.push({
+            x:lp.x,y:lp.y+droop,
+            baseR:rnd(2,4.5),
+            glowR:rnd(16,35),
+            col:pick(LCOL),
+            phase:rnd(0,TAU),
+            speed:rnd(0.6,2.2),
+            brightness:rnd(0.5,1),
+            // Wire connection point (on the vine)
+            wx:lp.x,wy:lp.y,
+          });
+        }
+        cx=endX;cy=endY;
+      }
+    }
+    // Also put lights and leaves on branches
+    branches.forEach(br=>{
+      // Branch lights
+      const lc=Math.floor(rnd(1,4));
+      for(let i=0;i<lc;i++){
+        const t=rnd(0.2,0.9);
+        const p=bezPt(br.seg.p0,br.seg.p1,br.seg.p2,br.seg.p3,t);
+        stringLights.push({x:p.x,y:p.y+rnd(1,5),baseR:rnd(1.8,3.5),glowR:rnd(12,25),col:pick(LCOL),phase:rnd(0,TAU),speed:rnd(0.6,2.2),brightness:rnd(0.4,0.9),wx:p.x,wy:p.y});
+      }
+      // Branch leaves
+      if(Math.random()>0.3){
+        const t=rnd(0.4,0.9);
+        const p=bezPt(br.seg.p0,br.seg.p1,br.seg.p2,br.seg.p3,t);
+        leaves.push({x:p.x,y:p.y,size:rnd(6,14)*(isMobile?0.7:1),angle:rnd(-PI,PI),opacity:rnd(0.25,0.5),sway:rnd(0,TAU)});
+      }
+      // Branch tendrils
+      if(Math.random()>0.5){
+        const t=rnd(0.3,0.8);
+        const p=bezPt(br.seg.p0,br.seg.p1,br.seg.p2,br.seg.p3,t);
+        tendrils.push({x:p.x,y:p.y,angle:rnd(-PI,PI),length:rnd(15,35)*(isMobile?0.6:1),curl:Math.random()>0.5?1:-1,opacity:rnd(0.2,0.35)});
+      }
+      // Branch grape clusters
+      if(Math.random()<0.25){
+        const t=rnd(0.3,0.8);
+        const p=bezPt(br.seg.p0,br.seg.p1,br.seg.p2,br.seg.p3,t);
+        clusters.push({x:p.x,y:p.y+rnd(5,15),size:rnd(5,9)*(isMobile?0.7:1),hue:pick([255,270,285,300]),opacity:rnd(0.3,0.5)});
+      }
+    });
+    // ── Floating luminous particles ──
+    const pCount=isMobile?12:isTablet?20:30;
+    for(let i=0;i<pCount;i++){
+      particles.push({x:rnd(0,W),y:rnd(0,H),vx:rnd(-0.25,0.25),vy:rnd(-0.4,-0.08),r:rnd(1,2.5),col:pick(LCOL),phase:rnd(0,TAU),speed:rnd(0.5,1.5),life:rnd(0,1)});
+    }
+    scene={canes,branches,tendrils,leaves,clusters,stringLights,particles};
+  }
+  // ── Main draw loop ──
+  function draw(time){
+    ctx.clearRect(0,0,W,H);
+    if(!scene)return;
+    const t=time*0.001;
+    // 1) Canes (main woody vines)
+    scene.canes.forEach(c=>drawCane(c.seg,c.width,c.opacity,t));
+    // 2) Branches
+    scene.branches.forEach(b=>drawCane(b.seg,b.width,b.opacity,t));
+    // 3) Tendrils
+    scene.tendrils.forEach(tr=>drawTendril(tr.x,tr.y,tr.angle,tr.length,tr.curl,tr.opacity,t));
+    // 4) Leaves (behind grapes)
+    scene.leaves.forEach(lf=>drawGrapeLeaf(lf.x,lf.y,lf.size,lf.angle,lf.opacity,t));
+    // 5) Grape clusters
+    scene.clusters.forEach(cl=>drawGrapeCluster(cl.x,cl.y,cl.size,cl.hue,cl.opacity,t));
+    // 6) Light wires + string lights
+    scene.stringLights.forEach(l=>{
+      // Tiny wire from vine to light
+      ctx.strokeStyle=`rgba(200,200,200,0.08)`;
+      ctx.lineWidth=0.5;
+      ctx.beginPath();ctx.moveTo(l.wx,l.wy);ctx.lineTo(l.x,l.y);ctx.stroke();
+      // Light animation
+      const pulse=reducedMotion?0.7:(0.3+0.7*((Math.sin(t*l.speed+l.phase)+1)/2));
+      const bri=l.brightness*pulse;
+      let boost=0;
+      if(mouseX>=0){
+        const d=dist(l.x,l.y,mouseX,mouseY);
+        if(d<150) boost=0.5*(1-d/150);
+      }
+      const tb=Math.min(bri+boost,1);
+      // Multi-layer glow
+      const g1=ctx.createRadialGradient(l.x,l.y,0,l.x,l.y,l.glowR*tb);
+      g1.addColorStop(0,`rgba(${l.col.r},${l.col.g},${l.col.b},${tb*0.45})`);
+      g1.addColorStop(0.3,`rgba(${l.col.r},${l.col.g},${l.col.b},${tb*0.18})`);
+      g1.addColorStop(0.7,`rgba(${l.col.r},${l.col.g},${l.col.b},${tb*0.04})`);
+      g1.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=g1;
+      ctx.beginPath();ctx.arc(l.x,l.y,l.glowR*tb,0,TAU);ctx.fill();
+      // Bulb
+      const g2=ctx.createRadialGradient(l.x-l.baseR*0.2,l.y-l.baseR*0.2,0,l.x,l.y,l.baseR*(0.8+tb*0.4));
+      g2.addColorStop(0,`rgba(255,255,255,${tb*0.85})`);
+      g2.addColorStop(0.4,`rgba(${l.col.r},${l.col.g},${l.col.b},${tb*0.9})`);
+      g2.addColorStop(1,`rgba(${l.col.r},${l.col.g},${l.col.b},${tb*0.5})`);
+      ctx.fillStyle=g2;
+      ctx.beginPath();ctx.arc(l.x,l.y,l.baseR*(0.8+tb*0.4),0,TAU);ctx.fill();
+    });
+    // 7) Floating particles
+    if(!reducedMotion){
+      scene.particles.forEach(p=>{
+        p.x+=p.vx;p.y+=p.vy;p.life+=0.002;
+        if(p.y<-10||p.life>1){p.x=rnd(0,W);p.y=H+10;p.life=0}
+        const alpha=Math.sin(p.life*PI)*0.3*(0.5+0.5*Math.sin(t*p.speed+p.phase));
+        if(alpha>0.01){
+          const pg=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*3);
+          pg.addColorStop(0,`rgba(${p.col.r},${p.col.g},${p.col.b},${alpha})`);
+          pg.addColorStop(1,"rgba(0,0,0,0)");
+          ctx.fillStyle=pg;
+          ctx.beginPath();ctx.arc(p.x,p.y,p.r*3,0,TAU);ctx.fill();
+        }
+      });
+    }
+    raf=requestAnimationFrame(draw);
+  }
+  // ── Lifecycle ──
+  function resize(){
+    const hero=document.getElementById("homeHero");
+    if(!hero||!cvs)return;
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    W=hero.offsetWidth;H=hero.offsetHeight;
+    cvs.width=W*dpr;cvs.height=H*dpr;
+    cvs.style.width=W+"px";cvs.style.height=H+"px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    buildScene();
+  }
+  function onMove(e){
+    const hero=document.getElementById("homeHero");
+    if(!hero)return;
+    const rect=hero.getBoundingClientRect();
+    const cx=e.touches?e.touches[0].clientX:e.clientX;
+    const cy=e.touches?e.touches[0].clientY:e.clientY;
+    mouseX=cx-rect.left;mouseY=cy-rect.top;
+  }
+  function onLeave(){mouseX=-1;mouseY=-1}
+  let _resizeTimer=null;
+  function onResize(){clearTimeout(_resizeTimer);_resizeTimer=setTimeout(resize,200)}
+  return {
+    start:function(){
+      cvs=document.getElementById("grapevineCanvas");
+      if(!cvs)return;
+      ctx=cvs.getContext("2d");
+      resize();
+      if(reducedMotion){draw(0);return}
+      raf=requestAnimationFrame(draw);
+      const hero=document.getElementById("homeHero");
+      if(hero){hero.addEventListener("mousemove",onMove);hero.addEventListener("touchmove",onMove,{passive:true});hero.addEventListener("mouseleave",onLeave)}
+      window.addEventListener("resize",onResize);
+    },
+    stop:function(){
+      if(raf){cancelAnimationFrame(raf);raf=null}
+      const hero=document.getElementById("homeHero");
+      if(hero){hero.removeEventListener("mousemove",onMove);hero.removeEventListener("touchmove",onMove);hero.removeEventListener("mouseleave",onLeave)}
+      window.removeEventListener("resize",onResize);
+      mouseX=-1;mouseY=-1;
+    },
+  };
+})();
+
 // Router
 let currentPage="home";
-function navigate(id){currentPage=id;history.pushState(null,"","#"+id);document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));const pg=document.getElementById("pg-"+id);if(pg)pg.classList.add("active");document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("active",a.dataset.nav===id));window.scrollTo({top:0,behavior:"instant"});closeSidebar();updateHeader();updateSidebarActive();if(id!=="photos")stopGal();if(id!=="home")clearInterval(cdTimer);if(id==="photos")startGal();if(id==="home")startCountdown()}
+function navigate(id){currentPage=id;history.pushState(null,"","#"+id);document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));const pg=document.getElementById("pg-"+id);if(pg)pg.classList.add("active");document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("active",a.dataset.nav===id));window.scrollTo({top:0,behavior:"instant"});closeSidebar();updateHeader();updateSidebarActive();if(id!=="photos")stopGal();if(id!=="home"){clearInterval(cdTimer);GV_CANVAS.stop()}if(id==="photos")startGal();if(id==="home"){startCountdown();GV_CANVAS.start()}}
 function toggleSidebar(){document.getElementById("sidebarOverlay").classList.add("open")}
 function closeSidebar(){document.getElementById("sidebarOverlay").classList.remove("open")}
 const NAV_ES={home:"Inicio",meeting:"Reunión",events:"Eventos",subscribe:"Suscribirse",contribute:"Contribuir",about:"Acerca de GV/LV",gvr:"Rincón del GVR / RLV",documents:"Documentos",photos:"Galería de Eventos",media:"Escuchar y Ver",resources:"Recursos"};
 function renderNav(){document.getElementById("mNav").innerHTML=NAV_SECTIONS.map(s=>{const lbl=_lang==="es"?(NAV_ES[s.id]||s.label):s.label;return `<li><a href="#${s.id}" data-nav="${s.id}" onclick="navigate('${s.id}');return false;" class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-slate-700 font-medium text-[.95rem] no-underline transition-all hover:text-brand-600 hover:bg-brand-50 mb-0.5 min-h-[44px]"><i class="bi ${s.icon} w-5 text-center text-base"></i> ${lbl}</a></li>`}).join("");updateSidebarActive()}
 function updateSidebarActive(){document.querySelectorAll(".sidebar-nav-item").forEach(a=>a.classList.toggle("active",a.dataset.nav===currentPage))}
-function handleHash(){const h=(location.hash||"#home").slice(1);const valid=NAV_SECTIONS.find(s=>s.id===h);const id=valid?h:"home";currentPage=id;document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));const pg=document.getElementById("pg-"+id);if(pg)pg.classList.add("active");document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("active",a.dataset.nav===id));window.scrollTo({top:0,behavior:"instant"});closeSidebar();if(id!=="photos")stopGal();if(id!=="home")clearInterval(cdTimer);if(id==="photos")startGal();if(id==="home")startCountdown();setTimeout(()=>{updateHeader();updateSidebarActive()},10)}
+function handleHash(){const h=(location.hash||"#home").slice(1);const valid=NAV_SECTIONS.find(s=>s.id===h);const id=valid?h:"home";currentPage=id;document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));const pg=document.getElementById("pg-"+id);if(pg)pg.classList.add("active");document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("active",a.dataset.nav===id));window.scrollTo({top:0,behavior:"instant"});closeSidebar();if(id!=="photos")stopGal();if(id!=="home"){clearInterval(cdTimer);GV_CANVAS.stop()}if(id==="photos")startGal();if(id==="home"){startCountdown();GV_CANVAS.start()}setTimeout(()=>{updateHeader();updateSidebarActive()},10)}
 window.addEventListener("hashchange",handleHash);
 window.addEventListener("popstate",handleHash);
 
@@ -1011,6 +1523,7 @@ function renderHome(){
   // so we can't use heroHtml() — but we still pull the title/sub from PAGE_HEROES
   const hh=PAGE_HEROES.home;
   let h=`<div class="bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 text-white pt-20 md:pt-24 pb-14 md:pb-16 relative overflow-hidden hero-mesh" id="homeHero">
+    <canvas id="grapevineCanvas" aria-hidden="true"></canvas>
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
       <div class="grid md:grid-cols-2 gap-6 md:gap-10 items-center">
         <div class="text-center md:text-left">
@@ -1030,6 +1543,20 @@ function renderHome(){
   h+=`<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 -mt-8 relative z-20 stagger">`;
   HOME_QUICK_CARDS.forEach(c=>{h+=homeCard(c,quickVars[c.id]||{})});
   h+=`</div>`;
+  // ── AA Preamble ──
+  h+=`<div class="mt-6 mb-2">
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 relative overflow-hidden card-lift hover:border-brand-100">
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-700 via-brand-500 to-brand-400"></div>
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center text-2xl shrink-0 mt-1"><i class="bi bi-bookmark-star-fill"></i></div>
+        <div class="flex-1">
+          <h2 class="text-lg font-extrabold text-slate-900 mb-2">${t("AA Preamble","Pre\u00E1mbulo de AA")}</h2>
+          <blockquote class="text-sm md:text-[.93rem] text-slate-700 leading-relaxed italic">\u201C${t(AA_PREAMBLE.en,AA_PREAMBLE.es)}\u201D</blockquote>
+          <p class="text-[.6rem] text-slate-400 mt-3 not-italic">${t(AA_PREAMBLE.copyright,AA_PREAMBLE.copyright_es)}</p>
+        </div>
+      </div>
+    </div>
+  </div>`;
   h+=`<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mt-4 stagger">`;
   HOME_BROWSE_CARDS.forEach(c=>{h+=homeCard(c,browseVars[c.id]||{})});
   h+=`</div>`;
@@ -1042,7 +1569,7 @@ function renderHome(){
   h+=`</div>
     <p class="text-center mt-4"><a href="#media" onclick="navigate('media');return false;" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors no-underline"><i class="bi bi-play-circle"></i> ${t("Explore All Media","Explorar Todo el Contenido")}</a></p>
   </div></div><div class="pb-12"></div>`;
-  el.innerHTML=h;startCountdown()}
+  el.innerHTML=h;startCountdown();GV_CANVAS.stop();GV_CANVAS.start()}
 
 // ===== ABOUT PAGE =====
 function renderAbout(){
@@ -1066,6 +1593,20 @@ function renderAbout(){
           <h4 class="font-bold text-slate-900 mb-2">${t("What is La Viña?","¿Qué es La Viña?")}</h4>
           <p class="text-sm text-slate-600 mb-2">${t("A.A.'s bimonthly Spanish-language magazine, serving Spanish-speaking alcoholics since 1996. It carries the same spirit — personal stories, recovery insights, and AA news — in Spanish.","La revista bimestral en español de A.A., sirviendo a alcohólicos de habla hispana desde 1996. Lleva el mismo espíritu — historias personales, reflexiones de recuperación y noticias de AA — en español.")}</p>
           <p class="text-sm text-slate-600">${t('Recognized by the General Service Conference in 2001 as a permanent service. Available digitally via the app (iOS &amp; Android) and at <a href="https://www.aalavina.org" target="_blank" rel="noopener" class="text-brand-600 hover:text-brand-700 underline">aalavina.org</a>.','Reconocida por la Conferencia de Servicios Generales en 2001 como un servicio permanente. Disponible digitalmente a través de la app (iOS y Android) y en <a href="https://www.aalavina.org" target="_blank" rel="noopener" class="text-brand-600 hover:text-brand-700 underline">aalavina.org</a>.')}</p>
+        </div>
+      </div>
+      <div class="bg-white border-2 border-brand-200 rounded-2xl p-6 md:p-8 mt-6 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-700 via-brand-500 to-brand-400"></div>
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center text-2xl shrink-0 mt-1"><i class="bi bi-bookmark-star-fill"></i></div>
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-2 flex-wrap">
+              <h3 class="text-lg font-extrabold text-slate-900">${t("AA Preamble","Pre\u00E1mbulo de AA")}</h3>
+              <span class="text-[.6rem] font-semibold px-2 py-0.5 rounded-full bg-brand-50 text-brand-600 uppercase tracking-wider">${t("Born in the Grapevine \u2014 June 1947","Naci\u00F3 en el Grapevine \u2014 Junio 1947")}</span>
+            </div>
+            <blockquote class="text-sm md:text-[.93rem] text-slate-700 leading-relaxed italic">\u201C${t(AA_PREAMBLE.en,AA_PREAMBLE.es)}\u201D</blockquote>
+            <p class="text-[.6rem] text-slate-400 mt-3 not-italic">${t(AA_PREAMBLE.copyright,AA_PREAMBLE.copyright_es)}</p>
+          </div>
         </div>
       </div>
       <div class="grid md:grid-cols-2 gap-4 mt-6">
@@ -1093,6 +1634,16 @@ function renderAbout(){
               <a href="https://www.aagrapevine.org/apps" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors no-underline border border-slate-200"><i class="bi bi-phone"></i> Apps</a>
               <a href="https://www.aagrapevine.org/follow-grapevine" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors no-underline border border-slate-200"><i class="bi bi-arrow-up-right"></i> ${t("Follow","Seguir")}</a>
             </div>
+          </div>
+          <div class="bg-white border-2 border-purple-200 rounded-xl p-6 mt-3 card-lift hover:border-purple-300">
+            <div class="w-11 h-11 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center text-xl mb-3"><i class="bi bi-check2-square"></i></div>
+            <h4 class="font-bold text-slate-900 mb-2">${tx(TRADITIONS_CHECKLIST,"title")}</h4>
+            <p class="text-sm text-slate-600 mb-3">${tx(TRADITIONS_CHECKLIST,"description")}</p>
+            <div class="flex flex-col gap-2">
+              <a href="${TRADITIONS_CHECKLIST.en_url}" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors no-underline"><i class="bi bi-file-earmark-pdf"></i> ${t("Traditions Checklist (English)","Chequeo de Tradiciones (Ingl\u00E9s)")}</a>
+              <a href="${TRADITIONS_CHECKLIST.es_url}" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition-colors no-underline"><i class="bi bi-file-earmark-pdf"></i> ${t("Chequeo de las Tradiciones (Espa\u00F1ol)","Chequeo de las Tradiciones (Espa\u00F1ol)")}</a>
+            </div>
+            <p class="text-[.6rem] text-slate-400 mt-3">${tx(TRADITIONS_CHECKLIST,"copyright")}</p>
           </div>
         </div>
       </div>
@@ -1250,7 +1801,7 @@ function renderGVR(){
         <a href="https://www.aagrapevine.org/sites/default/files/2026-01/GV_Bookmark_2026.pdf" target="_blank" rel="noopener" class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3.5 no-underline text-inherit card-lift hover:border-brand-100 group"><div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-base shrink-0 mt-0.5"><i class="bi bi-bookmark"></i></div><div class="flex-1 min-w-0"><h6 class="text-sm font-semibold text-slate-900 m-0">GV Bookmark 2026</h6><p class="text-[.72rem] text-slate-500 mt-0.5 m-0">${t("Printable bookmark","Marcapáginas imprimible")}</p></div><i class="bi bi-download text-slate-300 text-xs shrink-0 mt-1"></i></a>
       </div></div>
       <!-- LV Tarjetas Postales -->
-      <div class="tpanel" id="gvr-lvpc"><div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+      <div class="tpanel" id="gvr-lvpc" lang="es"><div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         <a href="https://www.aalavina.org/sites/default/files/2026-01/Lleva-el-Mensaje-2026.pdf" target="_blank" rel="noopener" class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3.5 no-underline text-inherit card-lift hover:border-amber-100 group"><div class="w-9 h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-base shrink-0 mt-0.5"><i class="bi bi-heart"></i></div><div class="flex-1 min-w-0"><h6 class="text-sm font-semibold text-slate-900 m-0">Lleva el Mensaje 2026</h6><p class="text-[.72rem] text-slate-500 mt-0.5 m-0">Proyecto de suscripciones de regalo</p></div><i class="bi bi-download text-slate-300 text-xs shrink-0 mt-1"></i></a>
         <a href="https://www.aalavina.org/sites/default/files/2026-02/LV-30-Aniversario.pdf" target="_blank" rel="noopener" class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3.5 no-underline text-inherit card-lift hover:border-amber-100 group"><div class="w-9 h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-base shrink-0 mt-0.5"><i class="bi bi-award"></i></div><div class="flex-1 min-w-0"><h6 class="text-sm font-semibold text-slate-900 m-0">30 Aniversario de La Viña</h6><p class="text-[.72rem] text-slate-500 mt-0.5 m-0">Tarjeta del 30 aniversario</p></div><i class="bi bi-download text-slate-300 text-xs shrink-0 mt-1"></i></a>
         <a href="https://www.aalavina.org/sites/default/files/2026-01/LV-catalogo_postcard_2026.pdf" target="_blank" rel="noopener" class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3.5 no-underline text-inherit card-lift hover:border-amber-100 group"><div class="w-9 h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-base shrink-0 mt-0.5"><i class="bi bi-journal-richtext"></i></div><div class="flex-1 min-w-0"><h6 class="text-sm font-semibold text-slate-900 m-0">Catálogo 2026</h6><p class="text-[.72rem] text-slate-500 mt-0.5 m-0">Postal del catálogo de productos</p></div><i class="bi bi-download text-slate-300 text-xs shrink-0 mt-1"></i></a>
@@ -1296,7 +1847,7 @@ function renderGVR(){
         <a href="https://www.aagrapevine.org/sites/default/files/2022-06/PLAY_History_of_the_GV.pdf" target="_blank" rel="noopener" class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3.5 no-underline text-inherit card-lift hover:border-brand-100 group"><div class="w-9 h-9 bg-green-50 text-green-600 rounded-lg flex items-center justify-center text-base shrink-0 mt-0.5"><i class="bi bi-stars"></i></div><div class="flex-1 min-w-0"><h6 class="text-sm font-semibold text-slate-900 m-0">GV Play: History of GV</h6><p class="text-[.72rem] text-slate-500 mt-0.5 m-0">${t("Skit script for meetings","Guión de sketch para reuniones")}</p></div><i class="bi bi-download text-slate-300 text-xs shrink-0 mt-1"></i></a>
       </div></div>
       <!-- LV Recursos & Formularios -->
-      <div class="tpanel" id="gvr-lvtool"><div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+      <div class="tpanel" id="gvr-lvtool" lang="es"><div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         <a href="https://www.aalavina.org/sites/default/files/2026-02/LV_Catalogo_2026.pdf" target="_blank" rel="noopener" class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3.5 no-underline text-inherit card-lift hover:border-amber-100 group"><div class="w-9 h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-base shrink-0 mt-0.5"><i class="bi bi-journal-richtext"></i></div><div class="flex-1 min-w-0"><h6 class="text-sm font-semibold text-slate-900 m-0">Catálogo LV 2026</h6><p class="text-[.72rem] text-slate-500 mt-0.5 m-0">Catálogo completo de productos</p></div><i class="bi bi-download text-slate-300 text-xs shrink-0 mt-1"></i></a>
         <a href="https://www.aalavina.org/sites/default/files/2025-03/AALV_HOY_2025_RLV.pdf" target="_blank" rel="noopener" class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3.5 no-underline text-inherit card-lift hover:border-amber-100 group"><div class="w-9 h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-base shrink-0 mt-0.5"><i class="bi bi-newspaper"></i></div><div class="flex-1 min-w-0"><h6 class="text-sm font-semibold text-slate-900 m-0">La Viña Hoy</h6><p class="text-[.72rem] text-slate-500 mt-0.5 m-0">Resumen para RLVs</p></div><i class="bi bi-download text-slate-300 text-xs shrink-0 mt-1"></i></a>
         <a href="https://www.aalavina.org/sites/default/files/2025-03/Self_Support_LV2025.pdf" target="_blank" rel="noopener" class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3.5 no-underline text-inherit card-lift hover:border-amber-100 group"><div class="w-9 h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-base shrink-0 mt-0.5"><i class="bi bi-cash-stack"></i></div><div class="flex-1 min-w-0"><h6 class="text-sm font-semibold text-slate-900 m-0">Dependemos de tu Participación</h6><p class="text-[.72rem] text-slate-500 mt-0.5 m-0">Autofinanciamiento mediante suscripciones</p></div><i class="bi bi-download text-slate-300 text-xs shrink-0 mt-1"></i></a>
@@ -1344,9 +1895,9 @@ function renderGVR(){
     {title:t("Quick Meeting Announcement (30 seconds)","Anuncio Rápido para Reunión (30 segundos)"),icon:"bi-clock",text:t(`Hi, I'm [your name], your group's Grapevine Representative. This month's Grapevine features stories about [current month's topic]. If you'd like to subscribe — print, digital, or both — see me after the meeting or visit aagrapevine.org. La Viña, the Spanish edition, is also available at aalavina.org. Thanks!`,`Hola, soy [tu nombre], el Representante de Grapevine de su grupo. Este mes el Grapevine presenta historias sobre [tema del mes]. Si desean suscribirse — impresa, digital o ambas — hablen conmigo después de la reunión o visiten aagrapevine.org. La Viña, la edición en español, también está disponible en aalavina.org. ¡Gracias!`)},
     {title:t("Business Meeting Report (1 minute)","Informe para Reunión de Negocios (1 minuto)"),icon:"bi-clipboard-check",text:t(`Grapevine / La Viña report: The area committee met on [date]. [Brief update — e.g., "We're looking for volunteers for the booth at the Spring Assembly."] Our group currently has [X] active subscriptions. I'd like to encourage anyone interested in subscribing — digital is just $2.99 a month and gives you access to the full archive back to 1944. There's also a free podcast, "The AA Grapevine Half-Hour Variety Hour," available on Spotify and Apple Podcasts. If you have a story to share, Grapevine is looking for articles about [upcoming editorial topic]. See me after the meeting!`,`Informe de Grapevine / La Viña: El comité de área se reunió el [fecha]. [Breve actualización — ej., "Estamos buscando voluntarios para la mesa en la Asamblea de Primavera."] Nuestro grupo actualmente tiene [X] suscripciones activas. Me gustaría animar a cualquiera interesado en suscribirse — la digital cuesta solo $2.99 al mes y da acceso al archivo completo desde 1944. También hay un podcast gratuito, "The AA Grapevine Half-Hour Variety Hour," disponible en Spotify y Apple Podcasts. Si tienen una historia que compartir, Grapevine busca artículos sobre [próximo tema editorial]. ¡Hablen conmigo después de la reunión!`)},
     {title:t("Carry the Message Pitch (45 seconds)","Presentación de Lleva el Mensaje (45 segundos)"),icon:"bi-heart",text:t(`Did you know there are alcoholics in prisons, treatment centers, and hospitals who can't afford a Grapevine subscription? Through the Carry the Message program, our group can sponsor a gift subscription for just $36 a year. That's one person receiving 12 months of hope. If we pass the basket and each chip in a dollar or two, we can carry the message to someone who really needs it. I'll bring the order form next week — or we can do it online right now at aagrapevine.org/carry-the-message.`,`¿Sabían que hay alcohólicos en prisiones, centros de tratamiento y hospitales que no pueden pagar una suscripción de Grapevine? A través del programa Lleva el Mensaje, nuestro grupo puede patrocinar una suscripción de regalo por solo $36 al año. Eso es una persona recibiendo 12 meses de esperanza. Si pasamos la canasta y cada uno contribuye un dólar o dos, podemos llevar el mensaje a alguien que realmente lo necesita. Traeré el formulario la próxima semana — o podemos hacerlo en línea ahora mismo en aagrapevine.org/carry-the-message.`)},
-    {title:t("Spanish Meeting Announcement","Anuncio para Reuniones en Español"),icon:"bi-translate",text:`Hola, soy [tu nombre], su Representante de La Viña. La edición más reciente de La Viña tiene historias sobre [tema del mes]. Si quieren suscribirse — digital o impresa — hablen conmigo después de la reunión o visiten aalavina.org. ¡También hay un podcast gratuito y una aplicación móvil! Gracias.`},
+    {title:t("Spanish Meeting Announcement","Anuncio para Reuniones en Español"),icon:"bi-translate",lang:"es",text:`Hola, soy [tu nombre], su Representante de La Viña. La edición más reciente de La Viña tiene historias sobre [tema del mes]. Si quieren suscribirse — digital o impresa — hablen conmigo después de la reunión o visiten aalavina.org. ¡También hay un podcast gratuito y una aplicación móvil! Gracias.`},
   ];
-  let scriptHtml='';scripts.forEach(s=>{scriptHtml+=`<div class="bg-white border border-slate-200 rounded-xl p-5 card-lift hover:border-brand-100"><div class="flex items-center gap-2 mb-3"><i class="bi ${s.icon} text-green-600"></i><h4 class="font-bold text-slate-900 text-sm">${s.title}</h4></div><div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-700 leading-relaxed italic">"${s.text}"</div><button type="button" onclick="copyText(\`${s.text.replace(/`/g,"\\`")}\`,this)" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-brand-50 text-slate-600 hover:text-brand-600 rounded-lg text-xs font-semibold transition-colors border-none cursor-pointer"><i class="bi bi-clipboard"></i> ${t("Copy to Clipboard","Copiar al Portapapeles")}</button></div>`});
+  let scriptHtml='';scripts.forEach(s=>{const langAttr=s.lang?` lang="${s.lang}"`:"";scriptHtml+=`<div class="bg-white border border-slate-200 rounded-xl p-5 card-lift hover:border-brand-100"${langAttr}><div class="flex items-center gap-2 mb-3"><i class="bi ${s.icon} text-green-600"></i><h4 class="font-bold text-slate-900 text-sm">${s.title}</h4></div><div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-700 leading-relaxed italic">"${s.text}"</div><button type="button" onclick="copyText(\`${s.text.replace(/`/g,"\\`")}\`,this)" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-brand-50 text-slate-600 hover:text-brand-600 rounded-lg text-xs font-semibold transition-colors border-none cursor-pointer"><i class="bi bi-clipboard"></i> ${t("Copy to Clipboard","Copiar al Portapapeles")}</button></div>`});
   document.getElementById("gvrScripts").innerHTML=scriptHtml}
 
 // ===== SUBSCRIBE PAGE =====
