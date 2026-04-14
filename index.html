@@ -740,7 +740,7 @@ function vidCard(v){const safeTitle=v.title.replace(/&/g,"&amp;").replace(/"/g,"
 document.addEventListener("click",function(e){const card=e.target.closest(".yt-card");if(!card)return;const id=card.dataset.ytid;const title=card.dataset.yttitle;if(!id)return;const thumb=card.querySelector(".yt-thumb");if(!thumb)return;thumb.innerHTML='<iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1&rel=0" title="'+title+'" style="position:absolute;inset:0;width:100%;height:100%" allow="autoplay;encrypted-media" allowfullscreen></iframe>'})
 
 // GVR document card renderer — generates a download card from a GVR_DOCUMENTS row
-function gvrDocCard(d,colorClass,iconBgClass){return `<a href="${d.url}" target="_blank" rel="noopener" class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3.5 no-underline text-inherit card-lift hover:border-${colorClass} group"><div class="w-9 h-9 ${iconBgClass} rounded-lg flex items-center justify-center text-base shrink-0 mt-0.5"><i class="bi ${d.icon}"></i></div><div class="flex-1 min-w-0"><h6 class="text-sm font-semibold text-slate-900 m-0">${tx(d,"title")}</h6><p class="text-[.72rem] text-slate-500 mt-0.5 m-0">${tx(d,"description")}</p></div><i class="bi bi-download text-slate-300 text-xs shrink-0 mt-1"></i></a>`}
+function gvrDocCard(d,colorClass,iconBgClass){const hoverBorder=colorClass==="brand-100"?"hover:border-brand-100":"hover:border-amber-100";return `<a href="${d.url}" target="_blank" rel="noopener" class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3.5 no-underline text-inherit card-lift ${hoverBorder} group"><div class="w-9 h-9 ${iconBgClass} rounded-lg flex items-center justify-center text-base shrink-0 mt-0.5"><i class="bi ${d.icon}"></i></div><div class="flex-1 min-w-0"><h6 class="text-sm font-semibold text-slate-900 m-0">${tx(d,"title")}</h6><p class="text-[.72rem] text-slate-500 mt-0.5 m-0">${tx(d,"description")}</p></div><i class="bi bi-download text-slate-300 text-xs shrink-0 mt-1"></i></a>`}
 
 // Clipboard copy with visual feedback
 function copyText(text,btn){navigator.clipboard.writeText(text).then(()=>{const orig=btn.innerHTML;btn.innerHTML='<i class="bi bi-check-lg"></i> '+t("Copied!","¡Copiado!");btn.classList.add('!bg-green-50','!text-green-600','!border-green-200');setTimeout(()=>{btn.innerHTML=orig;btn.classList.remove('!bg-green-50','!text-green-600','!border-green-200')},1500)}).catch(()=>{prompt("Copy this:",text)})}
@@ -1852,8 +1852,7 @@ function renderPhotos(){
     const safeCap=cap.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
     const imgSrc=driveUrl(fp("photos",p.filename),"image");
     const badge=catColors[cat]||"bg-slate-500 text-white";
-    const catIdx=BOOTH_PHOTOS.filter((pp,ii)=>ii<=i&&(cat==="all"||_photoCategory(pp)===cat)).length-1;
-    h+=`<div class="photo-thumb" data-cat="${cat}" data-lb-group="${cat}" data-lb-idx="${catIdx}" role="button" tabindex="0" aria-label="${safeCap}" onkeydown="if(event.key==='Enter')this.click()">
+    h+=`<div class="photo-thumb" data-cat="${cat}" data-lb-group="all" data-lb-idx="${i}" role="button" tabindex="0" aria-label="${safeCap}" onkeydown="if(event.key==='Enter')this.click()">
       <span class="photo-cat-badge ${badge}">${catLabels[cat]||cat}</span>
       <img src="${imgSrc}" alt="${safeCap}" loading="lazy" onerror="if(!this.dataset.errored){this.dataset.errored='1';this.style.display='none'}">
       <div class="photo-overlay"><span>${cap}</span></div>
@@ -1876,13 +1875,10 @@ function filterPhotos(cat,btn){
   document.querySelectorAll('#photoGrid .photo-thumb').forEach(el=>{
     const match=cat==='all'||el.dataset.cat===cat;
     el.style.display=match?'':'none';
-    // Update lightbox index for filtered view
-    if(match){
-      el.dataset.lbGroup=cat;
-      const visible=[...document.querySelectorAll('#photoGrid .photo-thumb')].filter(x=>x.style.display!=='none');
-      visible.forEach((x,i)=>{x.dataset.lbIdx=i});
-    }
   });
+  // Update lightbox indices once after all visibility is set
+  const visible=[...document.querySelectorAll('#photoGrid .photo-thumb')].filter(x=>x.style.display!=='none');
+  visible.forEach((x,i)=>{x.dataset.lbGroup=cat;x.dataset.lbIdx=i});
 }
 
 // ===== MEDIA PAGE =====
